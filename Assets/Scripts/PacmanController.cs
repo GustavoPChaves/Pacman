@@ -2,15 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class PacmanController : MonoBehaviour
 {
-    [SerializeField]
+
     Vector2 _direction;
     Animator _animator;
+    Rigidbody2D _rigidbody2D;
+
+    [SerializeField]
+    float speed = 1;
     // Start is called before the first frame update
     void Start()
     {
         _animator = GetComponent<Animator>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+
+        _direction = Vector2.right;
+
+        SetRigidbodyVelocity(_direction, speed);
     }
 
     // Update is called once per frame
@@ -18,8 +28,23 @@ public class PacmanController : MonoBehaviour
     {
         _direction.x = Input.GetAxisRaw("Horizontal");
         _direction.y = Input.GetAxisRaw("Vertical");
-        _animator.SetFloat("Horizontal", _direction.x);
-        _animator.SetFloat("Vertical", _direction.y);
 
+        SetRigidbodyVelocity(_direction, speed);
+        SetMovementAnimation(_direction);
     }
+
+    void SetRigidbodyVelocity(Vector2 direction, float speed)
+    {
+        if(!direction.IsVectorZero())
+            _rigidbody2D.velocity = speed * direction.normalized;
+    }
+
+    void SetMovementAnimation(Vector2 direction)
+    {
+        _animator.SetFloat("Horizontal", direction.x);
+        _animator.SetFloat("Vertical", direction.y);
+    }
+
+
+
 }
