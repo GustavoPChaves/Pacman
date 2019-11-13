@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : GenericSingletonClass<GameManager>
+public class Collectible : MonoBehaviour
 {
+
     [SerializeField]
-    UIController _UIController;
+    int _pointValue;
 
-    int _score = 0;
+    string _name;
 
-
+    public int PointValue{
+        get { return _pointValue; }
+    }
     // Start is called before the first frame update
     void Start()
     {
-
+        _name = transform.name;   
     }
 
     // Update is called once per frame
@@ -22,10 +25,5 @@ public class GameManager : GenericSingletonClass<GameManager>
         
     }
 
-    public void SetScore(int score)
-    {
-        _score += score;
-        _UIController.SetScore(_score);
-    }
 
 }

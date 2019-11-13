@@ -46,5 +46,36 @@ public class PacmanController : MonoBehaviour
     }
 
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        GameManager.Instance.SetScore(GetValueFromTriggerCollision(collision));
+        PlayPacmanSound(collision.tag);
+    }
+
+
+    void PlayPacmanSound(string type)
+    {
+        if (type.Equals("Pellet"))
+        {
+            AudioManager.Instance.Play(AudioClipType.chomp);
+        }
+        else if (type.Equals("Fruits"))
+        {
+            AudioManager.Instance.Play(AudioClipType.fruit);
+        }
+        else if (type.Equals("Ghost"))
+        {
+            AudioManager.Instance.Play(AudioClipType.blueGhost);
+        }
+    }
+
+    int GetValueFromTriggerCollision(Collider2D collision)
+    {
+        var collectible = collision.GetComponent<Collectible>();
+
+        return collectible != null ? collectible.PointValue : 0;
+
+    }
+
 
 }
