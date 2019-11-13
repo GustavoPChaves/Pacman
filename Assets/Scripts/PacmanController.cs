@@ -11,7 +11,7 @@ public class PacmanController : MonoBehaviour
     Rigidbody2D _rigidbody2D;
 
     [SerializeField]
-    float speed = 1;
+    float _speed = 1;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +20,7 @@ public class PacmanController : MonoBehaviour
 
         _direction = Vector2.right;
 
-        SetRigidbodyVelocity(_direction, speed);
+        SetRigidbodyVelocity(_direction, _speed);
     }
 
     // Update is called once per frame
@@ -29,7 +29,7 @@ public class PacmanController : MonoBehaviour
         _direction.x = Input.GetAxisRaw("Horizontal");
         _direction.y = Input.GetAxisRaw("Vertical");
 
-        SetRigidbodyVelocity(_direction, speed);
+        SetRigidbodyVelocity(_direction, _speed);
         SetMovementAnimation(_direction);
     }
 
