@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -8,6 +7,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     public List<MazeCell> mazeCells;
 
+
+    public MazeCell[,] squareMaze = new MazeCell[28,31];
     string _data;
     string _path = Path.Combine("Assets/Resources/OriginalMaze.txt");
 
@@ -21,10 +22,15 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     }
 
+    private void Start()
+    {
+        //DrawNeighbors();
+        //DrawSphereOnPath();
+    }
+
     // Update is called once per frame
     void Update()
     {
-        DrawNeighbors();
     }
 
     List<MazeCell> GenerateMazeFromData(string data)
@@ -38,13 +44,12 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             while ((line = reader.ReadLine()) != null)
             {
 
-                 // for every line
+                // for every line
                 MazeCellFromLineData(Y, mazeCells, line, transform.position);
 
                 Y--;
             }
         }
-
         // after reading all MazeCells, determine the intersection MazeCells
         DetermineIntersectionsOnMaze(mazeCells);
 
@@ -52,9 +57,9 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     }
 
-    private static int MazeCellFromLineData(int Y, List<MazeCell> mazeCells, string line, Vector2 parentPosition)
+    private void MazeCellFromLineData(int Y, List<MazeCell> mazeCells, string line, Vector2 parentPosition)
     {
-        int X = 1; 
+        int X = 1;
         for (int i = 0; i < line.Length; ++i)
         {
             MazeCell newMazeCell = new MazeCell(X + parentPosition.x, Y + parentPosition.y);
@@ -71,10 +76,9 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             }
 
             mazeCells.Add(newMazeCell);
+            squareMaze[X - 1, Y - 1] = newMazeCell;
             X++;
         }
-
-        return X;
     }
 
     private static void SetupNeighborhoodOfMazeCell(int Y, List<MazeCell> mazeCells, string line, int i, MazeCell newMazeCell)
@@ -144,12 +148,54 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             Vector3 left = new Vector3(cell.x - 1, cell.y + 0.1f, 0);
             Vector3 right = new Vector3(cell.x + 1, cell.y - 0.1f, 0);
 
-            if (cell.up != null) Debug.DrawLine(pos, up, Color.white);
-            if (cell.down != null) Debug.DrawLine(pos, down, Color.white);
-            if (cell.left != null) Debug.DrawLine(pos, left, Color.white);
-            if (cell.right != null) Debug.DrawLine(pos, right, Color.white);
+            if (cell.up != null) Debug.DrawLine(pos, up, Color.white, float.MaxValue);
+            if (cell.down != null) Debug.DrawLine(pos, down, Color.white, float.MaxValue);
+            if (cell.left != null) Debug.DrawLine(pos, left, Color.white, float.MaxValue);
+            if (cell.right != null) Debug.DrawLine(pos, right, Color.white, float.MaxValue);
         }
 
+    }
+
+    void DrawSphereOnPath()
+    {
+        //foreach (MazeCell cell in mazeCells)
+        //{
+        //    Vector3 pos = new Vector2(cell.x, cell.y);
+        //    if (!cell.occupied)
+        //    {
+        //        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //        sphere.transform.position = pos;
+        //    }
+
+
+        //}
+        for (int i = 0; i < 28; i++)
+        {
+            for (int j = 0; j < 31; j++)
+            {
+                if (!squareMaze[i, j].occupied)
+                {
+                    Vector3 pos = new Vector2(squareMaze[i, j].x, squareMaze[i, j].y);
+                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    sphere.transform.position = pos;
+                }
+            }
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+
+        foreach (MazeCell cell in mazeCells)
+        {
+            Vector3 pos = new Vector2(cell.x, cell.y);
+            if (!cell.occupied)
+            {
+                Gizmos.color = Color.white;
+                Gizmos.DrawWireSphere(pos, 0.5f);
+            }
+
+        }
     }
 
     //----------------------------------------------------------------------
@@ -172,6 +218,19 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         return (31 - Y) * 28 + X - 1;
     }
 
+    public MazeCell CellFromPosition(Vector2 position)
+    {
+        if (position.x < 0)
+            position.x = 0;
+        if (position.y < 0)
+            position.y = 0;
+        if (position.x > 27)
+            position.x = 27;
+        if (position.y > 31)
+            position.y = 31;
+
+        return squareMaze[(int)position.x, (int)position.y];
+    }
     public int Index(MazeCell cell)
     {
 
@@ -206,5 +265,16 @@ public class MazeCell
         left = right = up = down = null;
     }
 
-
+    public MazeCell(MazeCell mazeCell)
+    {
+        x = mazeCell.x;
+        y = mazeCell.y;
+        occupied = mazeCell.occupied;
+        left = mazeCell.left;
+        right = mazeCell.right;
+        down = mazeCell.down;
+        up = mazeCell.up;
+        isIntersection = mazeCell.isIntersection;
+        adjacentCount = mazeCell.adjacentCount;
+    }
 };

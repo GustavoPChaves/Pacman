@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class PacmanController : MonoBehaviour
@@ -38,13 +36,13 @@ public class PacmanController : MonoBehaviour
             SetRigidbodyVelocity(_direction, _speed);
             SetMovementAnimation(_direction);
         }
-        
+
 
     }
 
     void SetRigidbodyVelocity(Vector2 direction, float speed)
     {
-        if(!direction.IsVectorZero())
+        if (!direction.IsVectorZero())
             _rigidbody2D.velocity = speed * direction.normalized;
     }
 
@@ -59,7 +57,7 @@ public class PacmanController : MonoBehaviour
         // not from directly the center of next tile but just a little further from center of next tile
         Vector2 pos = transform.position;
         direction += new Vector2(direction.x * 0.5f, direction.y * 0.5f);
-        RaycastHit2D hit = Physics2D.BoxCast(pos, Vector2.one * 0.8f, 0, direction,  1f, 1 << 8);
+        RaycastHit2D hit = Physics2D.BoxCast(pos, Vector2.one * 0.8f, 0, direction, 1f, 1 << 8);
         return hit.collider == null;
     }
 

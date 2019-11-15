@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
@@ -11,12 +10,19 @@ public class GhostMovement : MonoBehaviour
     Animator _animator;
     Rigidbody2D _rigidbody2D;
 
-    public Vector2 Direction { get => _direction;
-        set {
+    public Vector2 targetPosition;
+
+    public Vector2 Direction
+    {
+        get => _direction;
+        set
+        {
             _direction = value;
             SetMovementAnimation(_direction);
-            _rigidbody2D.velocity = _speed * _direction;
-
+            //_rigidbody2D.velocity = _speed * _direction;
+            //targetPosition = _rigidbody2D.position + _direction;
+            //Vector2 p = Vector2.MoveTowards(_rigidbody2D.position, _rigidbody2D.position + _direction, _speed);
+            //_rigidbody2D.MovePosition(p);
 
         }
     }
@@ -39,8 +45,5 @@ public class GhostMovement : MonoBehaviour
         _animator.SetFloat("Vertical", direction.y);
     }
 
-    public void SetRigidbodyVelocity(Vector2 direction)
-    {
-        Direction = direction;
-    }
+
 }

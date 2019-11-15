@@ -14,9 +14,10 @@ namespace Assets.Scripts
         List<GameObject> pooledObjects;
         //optmizations: queue
         // Use this for initialization
-        void Awake () {
+        void Awake()
+        {
             pooledObjects = new List<GameObject>();
-            for (int i = 0; i<pooledAmount; i++)
+            for (int i = 0; i < pooledAmount; i++)
             {
                 GameObject obj = (GameObject)Instantiate(pooledObject);
                 obj.SetActive(false);
@@ -24,10 +25,10 @@ namespace Assets.Scripts
                 pooledObjects.Add(obj);
             }
         }
-	
+
         public GameObject GetPooledObject()
         {
-            for(int i = 0; i< pooledObjects.Count; i++)
+            for (int i = 0; i < pooledObjects.Count; i++)
             {
                 if (!pooledObjects[i].activeInHierarchy)
                 {
@@ -51,7 +52,7 @@ namespace Assets.Scripts
         public GameObject PooledInstantiate(Vector3 position, Quaternion rotation)
         {
             var obj = GetPooledObject();
-            if(obj == null)
+            if (obj == null)
                 return null;
             obj.transform.position = position;
             obj.transform.rotation = rotation;
@@ -75,8 +76,9 @@ namespace Assets.Scripts
             return obj;
         }
 
-        void Update () {
-		
+        void Update()
+        {
+
         }
 
         void OnDisable()
@@ -87,7 +89,7 @@ namespace Assets.Scripts
 
         void DisableAllPolledObjects(bool op)
         {
-            if(!op)
+            if (!op)
                 return;
             var count = pooledObjects.Count;
             for (int i = 0; i < count; i++)

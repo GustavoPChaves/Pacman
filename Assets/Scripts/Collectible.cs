@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Collectible : MonoBehaviour
 {
@@ -10,19 +8,20 @@ public class Collectible : MonoBehaviour
 
     string _name;
 
-    public int PointValue{
+    public int PointValue
+    {
         get { return _pointValue; }
     }
     // Start is called before the first frame update
     void Start()
     {
-        _name = transform.name;   
+        _name = transform.name;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
 

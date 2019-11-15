@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameManager : GenericSingletonClass<GameManager>
 {
@@ -19,7 +17,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void SetScore(int score)

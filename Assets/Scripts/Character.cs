@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class Character : MonoBehaviour
 {
@@ -19,7 +17,7 @@ public abstract class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     void SetMovementAnimation(Vector2 direction)

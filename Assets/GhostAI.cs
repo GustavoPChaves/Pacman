@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class GhostAI : MonoBehaviour
 {
-    private Vector3 waypoint;			// AI-determined waypoint
 
-    Queue<Vector2> waypoints;
-    Vector2 _direction;
     GhostMovement _ghostMovement;
 
     [SerializeField]
@@ -18,7 +13,7 @@ public class GhostAI : MonoBehaviour
 
     MazeCell currentCell, targetCell, nextCell;
 
-    private Vector3 _startPos = new Vector2(15f, 20f);
+    Vector2Int positionInMaze = new Vector2Int(15, 20);
 
     // Start is called before the first frame update
     void Start()
@@ -35,72 +30,43 @@ public class GhostAI : MonoBehaviour
     }
     public void InitializeGhost()
     {
-        waypoint = transform.position;  // to avoid flickering animation
-        _ghostMovement.SetRigidbodyVelocity(Vector2.right);
+        SetGhostDirection(Vector2.right);
     }
 
     void ChaseAI()
     {
+        Vector2 currentPos = transform.position;
+        if (Vector3.Distance(currentPos, _ghostMovement.targetPosition) > 0.01)
+        {
+            Vector2 p = Vector2.MoveTowards(currentPos, _ghostMovement.targetPosition, 0.1f);
+            GetComponent<Rigidbody2D>().MovePosition(p);
+            return;
+        }
+        currentCell = MazeManager.Instance.CellFromPosition(positionInMaze);
+        targetCell = GetTargetCell();
+        nextCell = GetNextCell(currentCell);
 
-        // if not at waypoint, move towards it
-        //if (Vector2.Distance(transform.position, waypoint) > 0.000000000001)
-        //{
-           // Vector2 p = Vector2.MoveTowards(transform.position, waypoint, 0.3f);
-        //_ghostMovement.SetRigidbodyVelocity(p);
-        //}
-
-        // if at waypoint, run AI module
-        //else 
-        AILogic();
-
+        ChooseDirection();
     }
 
-
-    public void AILogic()
+    private void ChooseDirection()
     {
-        // get current tile
-        Vector3 currentPos = new Vector3(transform.position.x + 0.499f, transform.position.y + 0.499f);
-        currentCell = maze[MazeManager.Instance.Index((int)currentPos.x, (int)currentPos.y)];
-
-        targetCell = GetTargetTilePerGhost();
-
-        // get the next tile according to Direction
-        if (_ghostMovement.Direction.x > 0)
-        {
-            nextCell = maze[MazeManager.Instance.Index((int)(currentPos.x + 1), (int)currentPos.y)];
-        }
-
-        if (_ghostMovement.Direction.x < 0)
-        {
-            nextCell = maze[MazeManager.Instance.Index((int)(currentPos.x - 1), (int)currentPos.y)];
-        }
-
-        if (_ghostMovement.Direction.y > 0)
-        {
-            nextCell = maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y + 1))];
-        }
-
-        if (_ghostMovement.Direction.y < 0)
-        {
-            nextCell = maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y - 1))];
-        }
-
-
         //---------------------
         // IF WE BUMP INTO WALL
-        if (nextCell.occupied && !currentCell.isIntersection)
+        if (nextCell == null || nextCell.occupied && !currentCell.isIntersection)
         {
             // if _ghostMovement moves to right or left and there is wall next tile
             if (_ghostMovement.Direction.x != 0)
             {
                 if (currentCell.down == null)
                 {
-                    SetGhostDirection(Vector3.up);
+                    SetGhostDirection(Vector2.up);
                 }
                 else
                 {
-                    SetGhostDirection(Vector3.down);
+                    SetGhostDirection(Vector2.down);
                 }
+
             }
 
             // if _ghostMovement moves to up or down and there is wall next tile
@@ -108,11 +74,11 @@ public class GhostAI : MonoBehaviour
             {
                 if (currentCell.left == null)
                 {
-                    SetGhostDirection(Vector3.right);
+                    SetGhostDirection(Vector2.right);
                 }
                 else
                 {
-                    SetGhostDirection(Vector3.left);
+                    SetGhostDirection(Vector2.left);
                 }
             }
 
@@ -125,7 +91,7 @@ public class GhostAI : MonoBehaviour
         {
 
             float dist1, dist2, dist3, dist4;
-            dist1 = dist2 = dist3 = dist4 = 999999f;
+            dist1 = dist2 = dist3 = dist4 = float.MaxValue;
             if (currentCell.up != null && !currentCell.up.occupied && !(_ghostMovement.Direction.y < 0))
             {
                 dist1 = MazeManager.Instance.distance(currentCell.up, targetCell);
@@ -149,26 +115,26 @@ public class GhostAI : MonoBehaviour
             float min = Mathf.Min(dist1, dist2, dist3, dist4);
             if (min == dist1)
             {
-                SetGhostDirection(Vector3.up);
+                SetGhostDirection(Vector2.up);
             }
 
             if (min == dist2)
             {
-                SetGhostDirection(Vector3.down);
+                SetGhostDirection(Vector2.down);
             }
 
             if (min == dist3)
             {
-                SetGhostDirection(Vector3.left);
+                SetGhostDirection(Vector2.left);
             }
 
             if (min == dist4)
             {
-                SetGhostDirection(Vector3.right);
+                SetGhostDirection(Vector2.right);
             }
         }
 
-        
+
 
         // if there is no decision to be made, designate next waypoint for the _ghostMovement
         else
@@ -177,19 +143,81 @@ public class GhostAI : MonoBehaviour
         }
     }
 
+    private MazeCell GetCellFromPosition(Vector2 currentPos)
+    {
+        Debug.DrawLine(currentPos, currentPos * 0.99f, Color.green, 3);
+        return maze[MazeManager.Instance.Index((int)Mathf.FloorToInt(currentPos.x), (int)Mathf.FloorToInt(currentPos.y))];
+    }
+
+    private MazeCell GetNextCell(Vector2 currentPos)
+    {
+        // get the next tile according to Direction
+        if (_ghostMovement.Direction.IsVectorRight())
+        {
+            return maze[MazeManager.Instance.Index((int)(currentPos.x + 1), (int)currentPos.y)];
+        }
+
+        if (_ghostMovement.Direction.IsVectorLeft())
+        {
+            return maze[MazeManager.Instance.Index((int)(currentPos.x - 1), (int)currentPos.y)];
+        }
+
+        if (_ghostMovement.Direction.IsVectorUp())
+        {
+            return maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y + 1))];
+        }
+
+        if (_ghostMovement.Direction.IsVectorDown())
+        {
+            return maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y - 1))];
+        }
+
+        return null;
+    }
+    private MazeCell GetNextCell(MazeCell currentCell)
+    {
+        // get the next tile according to Direction
+        if (_ghostMovement.Direction.IsVectorRight())
+        {
+            return currentCell.right;
+        }
+
+        if (_ghostMovement.Direction.IsVectorLeft())
+        {
+            return currentCell.left;
+        }
+
+        if (_ghostMovement.Direction.IsVectorUp())
+        {
+            return currentCell.up;
+        }
+
+        if (_ghostMovement.Direction.IsVectorDown())
+        {
+            return currentCell.down;
+        }
+
+        return null;
+    }
     void SetGhostDirection(Vector2 direction)
     {
 
-        Vector2 pos = new Vector3((int)transform.position.x, (int)transform.position.y, (int)transform.position.z);
-        waypoint = pos + _direction;
+        print(positionInMaze);
         _ghostMovement.Direction = direction;
+        positionInMaze.x += (int)direction.x;
+        positionInMaze.y += (int)direction.y;
+ 
+        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphere.transform.position = new Vector3( positionInMaze.x + 1, positionInMaze.y + 1);
+        _ghostMovement.targetPosition = positionInMaze + Vector2.one;
+        //_ghostMovement.GoToPosition(positionInMaze);
     }
 
-    private MazeCell GetTargetTilePerGhost()
+    private MazeCell GetTargetCell()
     {
 
-        Vector3 targetPos;
-        targetPos = new Vector3(target.position.x + 0.499f, target.position.y + 0.499f);
+        Vector2 targetPos;
+        targetPos = new Vector2(target.position.x, target.position.y);
         targetCell = maze[MazeManager.Instance.Index((int)targetPos.x, (int)targetPos.y)];
 
         return targetCell;
