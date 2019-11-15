@@ -18,7 +18,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
         _data = File.ReadAllText(_path);
         mazeCells = GenerateMazeFromData(_data);
-        
+
     }
 
     // Update is called once per frame
@@ -159,7 +159,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         X -= (int)transform.position.x;
         Y -= (int)transform.position.y;
         // if the requsted index is in bounds
-        //Debug.Log ("Index called for X: " + X + ", Y: " + Y);
         if (X >= 1 && X <= 28 && Y <= 31 && Y >= 1)
             return (31 - Y) * 28 + X - 1;
 

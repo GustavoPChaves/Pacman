@@ -18,7 +18,7 @@ public class GhostAI : MonoBehaviour
 
     MazeCell currentCell, targetCell, nextCell;
 
-    private Vector3 _startPos = new Vector2(0f, 9f);
+    private Vector3 _startPos = new Vector2(15f, 20f);
 
     // Start is called before the first frame update
     void Start()
@@ -29,7 +29,7 @@ public class GhostAI : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         ChaseAI();
     }
@@ -84,93 +84,91 @@ public class GhostAI : MonoBehaviour
         {
             nextCell = maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y - 1))];
         }
-        print(nextCell);
 
-        if (nextCell.occupied || currentCell.isIntersection)
+
+        //---------------------
+        // IF WE BUMP INTO WALL
+        if (nextCell.occupied && !currentCell.isIntersection)
         {
-            //---------------------
-            // IF WE BUMP INTO WALL
-            if (nextCell.occupied && !currentCell.isIntersection)
+            // if _ghostMovement moves to right or left and there is wall next tile
+            if (_ghostMovement.Direction.x != 0)
             {
-                // if _ghostMovement moves to right or left and there is wall next tile
-                if (_ghostMovement.Direction.x != 0)
-                {
-                    if (currentCell.down == null)
-                    {
-                        SetGhostDirection(Vector3.up);
-                    }
-                    else
-                    {
-                        SetGhostDirection(Vector3.down);
-                    }
-                }
-
-                // if _ghostMovement moves to up or down and there is wall next tile
-                else if (_ghostMovement.Direction.y != 0)
-                {
-                    if (currentCell.left == null)
-                    {
-                        SetGhostDirection(Vector3.right);
-                    }
-                    else
-                    {
-                        SetGhostDirection(Vector3.left);
-                    }
-                }
-
-            }
-
-            //---------------------------------------------------------------------------------------
-            // IF WE ARE AT INTERSECTION
-            // calculate the distance to target from each available tile and choose the shortest one
-            if (currentCell.isIntersection)
-            {
-
-                float dist1, dist2, dist3, dist4;
-                dist1 = dist2 = dist3 = dist4 = 999999f;
-                if (currentCell.up != null && !currentCell.up.occupied && !(_ghostMovement.Direction.y < 0))
-                {
-                    dist1 = MazeManager.Instance.distance(currentCell.up, targetCell);
-                }
-
-                if (currentCell.down != null && !currentCell.down.occupied && !(_ghostMovement.Direction.y > 0))
-                {
-                    dist2 = MazeManager.Instance.distance(currentCell.down, targetCell);
-                }
-
-                if (currentCell.left != null && !currentCell.left.occupied && !(_ghostMovement.Direction.x > 0))
-                {
-                    dist3 = MazeManager.Instance.distance(currentCell.left, targetCell);
-                }
-
-                if (currentCell.right != null && !currentCell.right.occupied && !(_ghostMovement.Direction.x < 0))
-                {
-                    dist4 = MazeManager.Instance.distance(currentCell.right, targetCell);
-                }
-
-                float min = Mathf.Min(dist1, dist2, dist3, dist4);
-                if (min == dist1)
+                if (currentCell.down == null)
                 {
                     SetGhostDirection(Vector3.up);
                 }
-
-                if (min == dist2)
+                else
                 {
                     SetGhostDirection(Vector3.down);
                 }
+            }
 
-                if (min == dist3)
-                {
-                    SetGhostDirection(Vector3.left);
-                }
-
-                if (min == dist4)
+            // if _ghostMovement moves to up or down and there is wall next tile
+            else if (_ghostMovement.Direction.y != 0)
+            {
+                if (currentCell.left == null)
                 {
                     SetGhostDirection(Vector3.right);
+                }
+                else
+                {
+                    SetGhostDirection(Vector3.left);
                 }
             }
 
         }
+
+        //---------------------------------------------------------------------------------------
+        // IF WE ARE AT INTERSECTION
+        // calculate the distance to target from each available tile and choose the shortest one
+        else if (!nextCell.occupied && currentCell.isIntersection)
+        {
+
+            float dist1, dist2, dist3, dist4;
+            dist1 = dist2 = dist3 = dist4 = 999999f;
+            if (currentCell.up != null && !currentCell.up.occupied && !(_ghostMovement.Direction.y < 0))
+            {
+                dist1 = MazeManager.Instance.distance(currentCell.up, targetCell);
+            }
+
+            if (currentCell.down != null && !currentCell.down.occupied && !(_ghostMovement.Direction.y > 0))
+            {
+                dist2 = MazeManager.Instance.distance(currentCell.down, targetCell);
+            }
+
+            if (currentCell.left != null && !currentCell.left.occupied && !(_ghostMovement.Direction.x > 0))
+            {
+                dist3 = MazeManager.Instance.distance(currentCell.left, targetCell);
+            }
+
+            if (currentCell.right != null && !currentCell.right.occupied && !(_ghostMovement.Direction.x < 0))
+            {
+                dist4 = MazeManager.Instance.distance(currentCell.right, targetCell);
+            }
+
+            float min = Mathf.Min(dist1, dist2, dist3, dist4);
+            if (min == dist1)
+            {
+                SetGhostDirection(Vector3.up);
+            }
+
+            if (min == dist2)
+            {
+                SetGhostDirection(Vector3.down);
+            }
+
+            if (min == dist3)
+            {
+                SetGhostDirection(Vector3.left);
+            }
+
+            if (min == dist4)
+            {
+                SetGhostDirection(Vector3.right);
+            }
+        }
+
+        
 
         // if there is no decision to be made, designate next waypoint for the _ghostMovement
         else
