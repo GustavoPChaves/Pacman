@@ -158,17 +158,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     void DrawSphereOnPath()
     {
-        //foreach (MazeCell cell in mazeCells)
-        //{
-        //    Vector3 pos = new Vector2(cell.x, cell.y);
-        //    if (!cell.occupied)
-        //    {
-        //        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        //        sphere.transform.position = pos;
-        //    }
 
-
-        //}
         for (int i = 0; i < 28; i++)
         {
             for (int j = 0; j < 31; j++)
@@ -186,40 +176,24 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     void OnDrawGizmos()
     {
 
-        foreach (MazeCell cell in mazeCells)
-        {
-            Vector3 pos = new Vector2(cell.x, cell.y);
-            if (!cell.occupied)
-            {
-                Gizmos.color = Color.white;
-                Gizmos.DrawWireSphere(pos, 0.5f);
-            }
+        //foreach (MazeCell cell in mazeCells)
+        //{
+        //    Vector3 pos = new Vector2(cell.x, cell.y);
+        //    if (!cell.occupied)
+        //    {
+        //        Gizmos.color = Color.white;
+        //        Gizmos.DrawWireSphere(pos, 0.5f);
+        //    }
 
-        }
+        //}
     }
 
-    //----------------------------------------------------------------------
-    // returns the index in the tiles list of a given tile's coordinates
-    public int Index(int X, int Y)
-    {
-        X -= (int)transform.position.x;
-        Y -= (int)transform.position.y;
-        // if the requsted index is in bounds
-        if (X >= 1 && X <= 28 && Y <= 31 && Y >= 1)
-            return (31 - Y) * 28 + X - 1;
-
-        // else, if the requested index is out of bounds
-        // return closest in-bounds tile's index 
-        if (X < 1) X = 1;
-        if (X > 28) X = 28;
-        if (Y < 1) Y = 1;
-        if (Y > 31) Y = 31;
-
-        return (31 - Y) * 28 + X - 1;
-    }
 
     public MazeCell CellFromPosition(Vector2 position)
     {
+        position -= Vector2.one;
+        position = new Vector2(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.y));
+
         if (position.x < 0)
             position.x = 0;
         if (position.y < 0)
@@ -231,11 +205,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
         return squareMaze[(int)position.x, (int)position.y];
     }
-    public int Index(MazeCell cell)
-    {
 
-        return (int)((31 - cell.y) * 28 + cell.x - 1);
-    }
 
     //----------------------------------------------------------------------
     // returns the distance between two tiles

@@ -8,8 +8,6 @@ public class GhostAI : MonoBehaviour
 
     [SerializeField]
     Transform target;
-    [SerializeField]
-    List<MazeCell> maze;
 
     MazeCell currentCell, targetCell, nextCell;
 
@@ -19,7 +17,6 @@ public class GhostAI : MonoBehaviour
     void Start()
     {
         _ghostMovement = GetComponent<GhostMovement>();
-        maze = MazeManager.Instance.mazeCells;
         InitializeGhost();
     }
 
@@ -31,23 +28,26 @@ public class GhostAI : MonoBehaviour
     public void InitializeGhost()
     {
         SetGhostDirection(Vector2.right);
+
     }
 
     void ChaseAI()
     {
         Vector2 currentPos = transform.position;
-        if (Vector3.Distance(currentPos, _ghostMovement.targetPosition) > 0.01)
-        {
-            Vector2 p = Vector2.MoveTowards(currentPos, _ghostMovement.targetPosition, 0.1f);
-            GetComponent<Rigidbody2D>().MovePosition(p);
-            return;
-        }
         currentCell = MazeManager.Instance.CellFromPosition(positionInMaze);
         targetCell = GetTargetCell();
         nextCell = GetNextCell(currentCell);
 
+        if (!_ghostMovement.HasReachTarget())
+        {
+            _ghostMovement.MoveToTargetPosition();
+            return;
+        }
+
         ChooseDirection();
     }
+
+
 
     private void ChooseDirection()
     {
@@ -146,7 +146,7 @@ public class GhostAI : MonoBehaviour
     private MazeCell GetCellFromPosition(Vector2 currentPos)
     {
         Debug.DrawLine(currentPos, currentPos * 0.99f, Color.green, 3);
-        return maze[MazeManager.Instance.Index((int)Mathf.FloorToInt(currentPos.x), (int)Mathf.FloorToInt(currentPos.y))];
+        return MazeManager.Instance.CellFromPosition(currentPos);
     }
 
     private MazeCell GetNextCell(Vector2 currentPos)
@@ -154,22 +154,25 @@ public class GhostAI : MonoBehaviour
         // get the next tile according to Direction
         if (_ghostMovement.Direction.IsVectorRight())
         {
-            return maze[MazeManager.Instance.Index((int)(currentPos.x + 1), (int)currentPos.y)];
+            return MazeManager.Instance.CellFromPosition(currentPos + Vector2.right);
         }
 
         if (_ghostMovement.Direction.IsVectorLeft())
         {
-            return maze[MazeManager.Instance.Index((int)(currentPos.x - 1), (int)currentPos.y)];
+            return MazeManager.Instance.CellFromPosition(currentPos + Vector2.left);
+
         }
 
         if (_ghostMovement.Direction.IsVectorUp())
         {
-            return maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y + 1))];
+            return MazeManager.Instance.CellFromPosition(currentPos + Vector2.up);
+
         }
 
         if (_ghostMovement.Direction.IsVectorDown())
         {
-            return maze[MazeManager.Instance.Index((int)currentPos.x, (int)(currentPos.y - 1))];
+            return MazeManager.Instance.CellFromPosition(currentPos + Vector2.down);
+
         }
 
         return null;
@@ -202,24 +205,27 @@ public class GhostAI : MonoBehaviour
     void SetGhostDirection(Vector2 direction)
     {
 
-        print(positionInMaze);
         _ghostMovement.Direction = direction;
         positionInMaze.x += (int)direction.x;
         positionInMaze.y += (int)direction.y;
- 
-        GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphere.transform.position = new Vector3( positionInMaze.x + 1, positionInMaze.y + 1);
-        _ghostMovement.targetPosition = positionInMaze + Vector2.one;
-        //_ghostMovement.GoToPosition(positionInMaze);
+        _ghostMovement.TargetPosition = positionInMaze; //+ Vector2.one;
+        //_ghostMovement.TargetPosition = GetTargetPosition();
+        //_ghostMovement.TargetPosition = target.position;
     }
 
     private MazeCell GetTargetCell()
     {
 
-        Vector2 targetPos;
-        targetPos = new Vector2(target.position.x, target.position.y);
-        targetCell = maze[MazeManager.Instance.Index((int)targetPos.x, (int)targetPos.y)];
+        Vector2 targetPos = target.position;
+        targetCell = MazeManager.Instance.CellFromPosition(targetPos);
 
         return targetCell;
+    }
+    private Vector2 GetTargetPosition()
+    {
+
+        var targetCell = GetTargetCell();
+
+        return new Vector2(targetCell.x, targetCell.y);
     }
 }

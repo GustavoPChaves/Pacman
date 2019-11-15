@@ -10,7 +10,17 @@ public class GhostMovement : MonoBehaviour
     Animator _animator;
     Rigidbody2D _rigidbody2D;
 
-    public Vector2 targetPosition;
+    Vector2 _targetPosition;
+
+    public Vector2 TargetPosition
+    {
+        get => _targetPosition;
+        set
+        {
+            _targetPosition.x = Mathf.RoundToInt(value.x);
+            _targetPosition.y = Mathf.RoundToInt(value.y);
+        }
+    }
 
     public Vector2 Direction
     {
@@ -19,11 +29,6 @@ public class GhostMovement : MonoBehaviour
         {
             _direction = value;
             SetMovementAnimation(_direction);
-            //_rigidbody2D.velocity = _speed * _direction;
-            //targetPosition = _rigidbody2D.position + _direction;
-            //Vector2 p = Vector2.MoveTowards(_rigidbody2D.position, _rigidbody2D.position + _direction, _speed);
-            //_rigidbody2D.MovePosition(p);
-
         }
     }
 
@@ -37,7 +42,7 @@ public class GhostMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        //Direction = _rigidbody2D.velocity;
+
     }
     void SetMovementAnimation(Vector2 direction)
     {
@@ -45,5 +50,18 @@ public class GhostMovement : MonoBehaviour
         _animator.SetFloat("Vertical", direction.y);
     }
 
+    public void MoveToTargetPosition()
+    {
+       
+        Vector2 currentPos = transform.position;
+        Vector2 position = Vector2.MoveTowards(currentPos, _targetPosition, _speed);
+        GetComponent<Rigidbody2D>().MovePosition(position);
+    }
+    public bool HasReachTarget()
+    {
+        Vector2 currentPos = transform.position;
+
+        return Vector3.Distance(currentPos, _targetPosition) < 0.0000001;
+    }
 
 }
