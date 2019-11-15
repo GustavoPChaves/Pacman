@@ -5,7 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class GhostMovement : MonoBehaviour
 {
-
+    [SerializeField]
+    float _speed = 1;
     Vector2 _direction;
     Animator _animator;
     Rigidbody2D _rigidbody2D;
@@ -14,6 +15,9 @@ public class GhostMovement : MonoBehaviour
         set {
             _direction = value;
             SetMovementAnimation(_direction);
+            _rigidbody2D.velocity = _speed * _direction;
+
+
         }
     }
 
@@ -27,11 +31,16 @@ public class GhostMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        Direction = _rigidbody2D.velocity;
+        //Direction = _rigidbody2D.velocity;
     }
     void SetMovementAnimation(Vector2 direction)
     {
         _animator.SetFloat("Horizontal", direction.x);
         _animator.SetFloat("Vertical", direction.y);
+    }
+
+    public void SetRigidbodyVelocity(Vector2 direction)
+    {
+        Direction = direction;
     }
 }

@@ -8,16 +8,16 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     public List<MazeCell> mazeCells;
 
-    string data;
-    string path = Path.Combine("Assets/Resources/OriginalMaze.txt");
+    string _data;
+    string _path = Path.Combine("Assets/Resources/OriginalMaze.txt");
 
     // Start is called before the first frame update
     protected override void Awake()
     {
         base.Awake();
 
-        data = File.ReadAllText(path);
-        mazeCells = GenerateMazeFromData(data);
+        _data = File.ReadAllText(_path);
+        mazeCells = GenerateMazeFromData(_data);
         
     }
 
@@ -156,6 +156,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     // returns the index in the tiles list of a given tile's coordinates
     public int Index(int X, int Y)
     {
+        X -= (int)transform.position.x;
+        Y -= (int)transform.position.y;
         // if the requsted index is in bounds
         //Debug.Log ("Index called for X: " + X + ", Y: " + Y);
         if (X >= 1 && X <= 28 && Y <= 31 && Y >= 1)
@@ -171,10 +173,10 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         return (31 - Y) * 28 + X - 1;
     }
 
-    public float Index(MazeCell cell)
+    public int Index(MazeCell cell)
     {
 
-        return (31 - cell.y) * 28 + cell.x - 1;
+        return (int)((31 - cell.y) * 28 + cell.x - 1);
     }
 
     //----------------------------------------------------------------------
