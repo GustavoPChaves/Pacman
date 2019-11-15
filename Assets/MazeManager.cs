@@ -5,12 +5,12 @@ using UnityEngine;
 public class MazeManager : GenericSingletonClass<MazeManager>
 {
 
-    public List<MazeCell> mazeCells;
-
-
-    public MazeCell[,] squareMaze = new MazeCell[28,31];
+    private List<MazeCell> _mazeList;
+    private MazeCell[,] _mazeArray = new MazeCell[28,31];
     string _data;
     string _path = Path.Combine("Assets/Resources/OriginalMaze.txt");
+
+    public bool debugEnabled = false;
 
     // Start is called before the first frame update
     protected override void Awake()
@@ -18,20 +18,19 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         base.Awake();
 
         _data = File.ReadAllText(_path);
-        mazeCells = GenerateMazeFromData(_data);
+        _mazeList = GenerateMazeFromData(_data);
 
     }
 
     private void Start()
     {
-        //DrawNeighbors();
-        //DrawSphereOnPath();
+        if (debugEnabled)
+        {
+            DrawNeighbors();
+        }
+
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-    }
 
     List<MazeCell> GenerateMazeFromData(string data)
     {
@@ -76,7 +75,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             }
 
             mazeCells.Add(newMazeCell);
-            squareMaze[X - 1, Y - 1] = newMazeCell;
+            _mazeArray[X - 1, Y - 1] = newMazeCell;
             X++;
         }
     }
@@ -140,13 +139,13 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     // Draw lines between neighbor tiles (debug)
     void DrawNeighbors()
     {
-        foreach (MazeCell cell in mazeCells)
+        foreach (MazeCell cell in _mazeList)
         {
-            Vector3 pos = new Vector3(cell.x, cell.y, 0);
-            Vector3 up = new Vector3(cell.x + 0.1f, cell.y + 1, 0);
-            Vector3 down = new Vector3(cell.x - 0.1f, cell.y - 1, 0);
-            Vector3 left = new Vector3(cell.x - 1, cell.y + 0.1f, 0);
-            Vector3 right = new Vector3(cell.x + 1, cell.y - 0.1f, 0);
+            Vector3 pos = new Vector3(cell.positionX, cell.positionY, 0);
+            Vector3 up = new Vector3(cell.positionX + 0.1f, cell.positionY + 1, 0);
+            Vector3 down = new Vector3(cell.positionX - 0.1f, cell.positionY - 1, 0);
+            Vector3 left = new Vector3(cell.positionX - 1, cell.positionY + 0.1f, 0);
+            Vector3 right = new Vector3(cell.positionX + 1, cell.positionY - 0.1f, 0);
 
             if (cell.up != null) Debug.DrawLine(pos, up, Color.white, float.MaxValue);
             if (cell.down != null) Debug.DrawLine(pos, down, Color.white, float.MaxValue);
@@ -156,36 +155,27 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
     }
 
-    void DrawSphereOnPath()
-    {
-
-        for (int i = 0; i < 28; i++)
-        {
-            for (int j = 0; j < 31; j++)
-            {
-                if (!squareMaze[i, j].occupied)
-                {
-                    Vector3 pos = new Vector2(squareMaze[i, j].x, squareMaze[i, j].y);
-                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    sphere.transform.position = pos;
-                }
-            }
-        }
-    }
 
     void OnDrawGizmos()
     {
+        if (debugEnabled)
+        {
+            foreach (MazeCell cell in _mazeList)
+            {
+                Vector3 pos = new Vector2(cell.positionX, cell.positionY);
+                if (!cell.occupied)
+                {
+                    Gizmos.color = Color.white;
+                    Gizmos.DrawWireSphere(pos, 0.5f);
+                }
+                else
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawWireSphere(pos, 0.5f);
+                }
+            }
+        }
 
-        //foreach (MazeCell cell in mazeCells)
-        //{
-        //    Vector3 pos = new Vector2(cell.x, cell.y);
-        //    if (!cell.occupied)
-        //    {
-        //        Gizmos.color = Color.white;
-        //        Gizmos.DrawWireSphere(pos, 0.5f);
-        //    }
-
-        //}
     }
 
 
@@ -200,51 +190,21 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             position.y = 0;
         if (position.x > 27)
             position.x = 27;
-        if (position.y > 31)
-            position.y = 31;
+        if (position.y > 30)
+            position.y = 30;
 
-        return squareMaze[(int)position.x, (int)position.y];
+        return _mazeArray[(int)position.x, (int)position.y];
     }
 
 
     //----------------------------------------------------------------------
-    // returns the distance between two tiles
+    // returns the distance between two cells
     public float distance(MazeCell cell1, MazeCell cell2)
     {
-        return Mathf.Sqrt(Mathf.Pow(cell1.x - cell2.x, 2) + Mathf.Pow(cell1.y - cell2.y, 2));
+        return Mathf.Sqrt(Mathf.Pow(cell1.positionX - cell2.positionX, 2) + Mathf.Pow(cell1.positionY - cell2.positionY, 2));
     }
 
 
 }
 
-public class MazeCell
-{
-    public float x { get; set; }
-    public float y { get; set; }
-    public bool occupied { get; set; }
-    public int adjacentCount { get; set; }
-    public bool isIntersection { get; set; }
 
-    public MazeCell left, right, up, down;
-
-    public MazeCell(float x, float y)
-    {
-        this.x = x;
-        this.y = y;
-        occupied = false;
-        left = right = up = down = null;
-    }
-
-    public MazeCell(MazeCell mazeCell)
-    {
-        x = mazeCell.x;
-        y = mazeCell.y;
-        occupied = mazeCell.occupied;
-        left = mazeCell.left;
-        right = mazeCell.right;
-        down = mazeCell.down;
-        up = mazeCell.up;
-        isIntersection = mazeCell.isIntersection;
-        adjacentCount = mazeCell.adjacentCount;
-    }
-};

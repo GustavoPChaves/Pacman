@@ -2833,7 +2833,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f6c939de5b61944bb50595347e41acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0.1
+  _speed: 0.2
 --- !u!212 &1531275766
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2929,7 +2929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7c1b51c2a32fd547877ca747199e3fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 1321091145}
+  _target: {fileID: 1321091145}
 --- !u!1 &1743812273
 GameObject:
   m_ObjectHideFlags: 0
@@ -16028,6 +16028,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6aa188e0c1bd3f4883bdd225a6eb4db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugEnabled: 0
 --- !u!212 &4539578642028910896
 SpriteRenderer:
   m_ObjectHideFlags: 0

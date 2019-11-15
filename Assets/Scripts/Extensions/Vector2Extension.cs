@@ -23,4 +23,25 @@ public static class Vector2Extension
     {
         return vector2 == Vector2.down;
     }
+    public static Vector2 FacingOrthogonalDirection(this Vector2 vector2)
+    {
+        if (vector2.IsVectorRight())
+        {
+            return Vector2.right;
+        }
+        if (vector2.IsVectorLeft())
+        {
+            return Vector2.left;
+        }
+        if (vector2.IsVectorUp())
+        {
+            return Vector2.up;
+
+        }
+        if (vector2.IsVectorDown())
+        {
+            return Vector2.down;
+        }
+        return Vector2.zero;
+    }
 }
