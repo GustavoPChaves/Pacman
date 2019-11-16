@@ -28,14 +28,14 @@ public class GhostMovement : MonoBehaviour
         set
         {
             _direction = value;
-            SetMovementAnimation(_direction);
+            //SetMovementAnimation(_direction);
         }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        _animator = GetComponent<Animator>();
+        //_animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
     }
 

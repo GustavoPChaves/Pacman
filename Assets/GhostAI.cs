@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Events;
 
 public class GhostAI : MonoBehaviour
 {
@@ -7,9 +9,15 @@ public class GhostAI : MonoBehaviour
     [SerializeField]
     Transform _target;
 
+    Func<MazeCell> _targetFunction;
+
+    [SerializeField]
+    GhostType _ghostType;
+
     MazeCell _currentCell, _targetCell, _nextCell;
 
     Vector2Int positionInMaze = new Vector2Int(15, 20);
+
 
     // Start is called before the first frame update
     void Start()
@@ -24,13 +32,31 @@ public class GhostAI : MonoBehaviour
     }
     public void InitializeGhost()
     {
+        switch (_ghostType)
+        {
+            case GhostType.Blinky:
+                _targetFunction = GetPacmanTargetCell;
+                break;
+            case GhostType.Pinky:
+                _targetFunction = GetFourUnitsAheadPacmanTargetCell;
+
+                break;
+            case GhostType.Inky:
+                _targetFunction = AheadFromBlinkyTargetCell;
+
+                break;
+            case GhostType.Clyde:
+                _targetFunction = DistanceBasedTargetCell;
+
+                break;
+        }
         SetGhostDirection(Vector2.right);
     }
     void ChaseAI()
     {
         Vector2 currentPos = transform.position;
         _currentCell = MazeManager.Instance.CellFromPosition(positionInMaze);
-        _targetCell = GetTargetCell();
+        _targetCell = _targetFunction();
         _nextCell = GetNextCell(_currentCell);
 
         if (!_ghostMovement.HasReachTarget())
@@ -130,12 +156,70 @@ public class GhostAI : MonoBehaviour
         _ghostMovement.TargetPosition = positionInMaze; 
     }
 
-    private MazeCell GetTargetCell()
+    protected MazeCell GetPacmanTargetCell()
     {
         Vector2 targetPos = _target.position;
         _targetCell = MazeManager.Instance.CellFromPosition(targetPos);
         return _targetCell;
     }
+    protected MazeCell GetFourUnitsAheadPacmanTargetCell()
+    {
+        Vector2 targetPos = _target.position;
+        targetPos += 4 * GameManager.Instance.Pacman.Direction;
+        _targetCell = MazeManager.Instance.CellFromPosition(targetPos);
+        return _targetCell;
+    }
+    protected MazeCell AheadFromBlinkyTargetCell()
+    {
+        Vector2 targetPos = _target.position;
+        targetPos += 2 * GameManager.Instance.Pacman.Direction;
+
+        var blinkyPos = GameManager.Instance.Blinky.positionInMaze;
+
+        var positionBasedOnBLinkyPosition = targetPos +  ( targetPos - blinkyPos);
+
+        Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), positionBasedOnBLinkyPosition, Color.red, 2);
+        Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), targetPos, Color.green, 2);
+
+        _targetCell = MazeManager.Instance.CellFromPosition(positionBasedOnBLinkyPosition);
+
+        return _targetCell;
+    }
+    protected MazeCell DistanceBasedTargetCell()
+    {
+        Vector2 targetPos = _target.position;
+        var isDistanceEnough = Vector2.Distance(targetPos, transform.position) > 8;
+
+        if (isDistanceEnough)
+        {
+            _targetCell = MazeManager.Instance.CellFromPosition(targetPos);
+            return _targetCell;
+        }
+
+        return MazeManager.Instance.CellFromPosition(GhostSpot.clyde);
+    }
+
+    public enum GhostType
+    {
+        Blinky,
+        Pinky,
+        Inky,
+        Clyde
+    }
+
 }
+
+
+public abstract class GhostSpot
+{
+    public static Vector2 blinky = new Vector2(27, 30);
+    public static Vector2 pinky = new Vector2(2, 30);
+    public static Vector2 clyde = new Vector2(2, 2);
+    public static Vector2 inky = new Vector2(27, 2);
+}
+
+
+
+
 
 

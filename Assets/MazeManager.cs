@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class MazeManager : GenericSingletonClass<MazeManager>
 {
-
     private List<MazeCell> _mazeList;
     private MazeCell[,] _mazeArray = new MazeCell[28,31];
     string _data;
@@ -16,22 +15,16 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     protected override void Awake()
     {
         base.Awake();
-
         _data = File.ReadAllText(_path);
         _mazeList = GenerateMazeFromData(_data);
-
     }
-
     private void Start()
     {
         if (debugEnabled)
         {
             DrawNeighbors();
         }
-
     }
-
-
     List<MazeCell> GenerateMazeFromData(string data)
     {
         int Y = 31;
@@ -42,10 +35,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             string line;
             while ((line = reader.ReadLine()) != null)
             {
-
                 // for every line
                 MazeCellFromLineData(Y, mazeCells, line, transform.position);
-
                 Y--;
             }
         }
@@ -55,7 +46,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         return mazeCells;
 
     }
-
     private void MazeCellFromLineData(int Y, List<MazeCell> mazeCells, string line, Vector2 parentPosition)
     {
         int X = 1;
@@ -79,7 +69,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             X++;
         }
     }
-
     private static void SetupNeighborhoodOfMazeCell(int Y, List<MazeCell> mazeCells, string line, int i, MazeCell newMazeCell)
     {
         SetupRightAndLeftNeighborOfMazeCell(mazeCells, line, i, newMazeCell);
@@ -87,7 +76,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         int upNeighbor = mazeCells.Count - line.Length; // up neighbor index
         SetupUpAndDownNeighborhoodOfMazeCell(Y, mazeCells, newMazeCell, upNeighbor);
     }
-
     private static void SetupUpAndDownNeighborhoodOfMazeCell(int Y, List<MazeCell> mazeCells, MazeCell newMazeCell, int upNeighbor)
     {
         if (HasUpNeighborOnPosition(Y, mazeCells, newMazeCell, upNeighbor))
@@ -134,7 +122,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
                 MazeCell.isIntersection = true;
         }
     }
-
     //-----------------------------------------------------------------------
     // Draw lines between neighbor tiles (debug)
     void DrawNeighbors()
@@ -152,10 +139,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             if (cell.left != null) Debug.DrawLine(pos, left, Color.white, float.MaxValue);
             if (cell.right != null) Debug.DrawLine(pos, right, Color.white, float.MaxValue);
         }
-
     }
-
-
     void OnDrawGizmos()
     {
         if (debugEnabled)
@@ -175,10 +159,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
                 }
             }
         }
-
     }
-
-
     public MazeCell CellFromPosition(Vector2 position)
     {
         position -= Vector2.one;
@@ -195,8 +176,6 @@ public class MazeManager : GenericSingletonClass<MazeManager>
 
         return _mazeArray[(int)position.x, (int)position.y];
     }
-
-
     //----------------------------------------------------------------------
     // returns the distance between two cells
     public float distance(MazeCell cell1, MazeCell cell2)
