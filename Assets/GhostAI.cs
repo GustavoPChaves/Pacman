@@ -18,6 +18,76 @@ public class GhostAI : MonoBehaviour
 
     Vector2Int positionInMaze = new Vector2Int(15, 20);
 
+    GhostState _currentState = GhostState.Scatter;
+
+    public GhostState CurrentState
+    {
+        get => _currentState;
+        set
+        {
+            _currentState = value;
+            print(value);
+            _ghostMovement.Frightened(_currentState == GhostState.Frightened);
+            _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
+        }
+    }
+
+    Func<MazeCell> GetTargetFunctionFromState(GhostState ghostState, GhostType ghostType)
+    {
+        switch (ghostState)
+        {
+            case GhostState.Chase:
+                return GetTargetChaseFunctionWithGhostType(ghostType);
+
+            case GhostState.Scatter:
+                return () => GetGhostSpotWith(ghostType);
+
+            case GhostState.Frightened:
+                return GetTargetChaseFunctionWithGhostType(ghostType);
+                
+
+        }
+
+        return GetTargetChaseFunctionWithGhostType(ghostType);
+
+    }
+
+    Func<MazeCell> GetTargetChaseFunctionWithGhostType(GhostType ghostType)
+    {
+        switch (ghostType)
+        {
+            case GhostType.Blinky:
+                return GetPacmanTargetCell;
+            case GhostType.Pinky:
+                return GetFourUnitsAheadPacmanTargetCell;
+            case GhostType.Inky:
+                return AheadFromBlinkyTargetCell;
+            case GhostType.Clyde:
+                return DistanceBasedTargetCell;
+        }
+        return GetPacmanTargetCell;
+    }
+
+    MazeCell GetGhostSpotWith(GhostType ghostType)
+    {
+        switch (ghostType)
+        {
+            case GhostType.Blinky:
+                return MazeManager.Instance.CellFromPosition(GhostSpot.blinky);
+
+            case GhostType.Pinky:
+                return MazeManager.Instance.CellFromPosition(GhostSpot.pinky);
+
+            case GhostType.Inky:
+                return MazeManager.Instance.CellFromPosition(GhostSpot.inky);
+
+            case GhostType.Clyde:
+                return MazeManager.Instance.CellFromPosition(GhostSpot.clyde);
+
+        }
+        return MazeManager.Instance.CellFromPosition(GhostSpot.blinky);
+
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -30,28 +100,13 @@ public class GhostAI : MonoBehaviour
     {
         ChaseAI();
     }
+
     public void InitializeGhost()
     {
-        switch (_ghostType)
-        {
-            case GhostType.Blinky:
-                _targetFunction = GetPacmanTargetCell;
-                break;
-            case GhostType.Pinky:
-                _targetFunction = GetFourUnitsAheadPacmanTargetCell;
-
-                break;
-            case GhostType.Inky:
-                _targetFunction = AheadFromBlinkyTargetCell;
-
-                break;
-            case GhostType.Clyde:
-                _targetFunction = DistanceBasedTargetCell;
-
-                break;
-        }
         SetGhostDirection(Vector2.right);
+        CurrentState = GhostState.Frightened;
     }
+
     void ChaseAI()
     {
         Vector2 currentPos = transform.position;
@@ -64,66 +119,103 @@ public class GhostAI : MonoBehaviour
             _ghostMovement.MoveToTargetPosition();
             return;
         }
-        ChooseDirection();
+        ChooseDirection(CurrentState);
     }
 
     bool CellIsValid(MazeCell cell)
     {
         return cell != null && !cell.occupied;
     }
-    private void ChooseDirection()
+
+    private void ChooseDirection(GhostState ghostState)
     {
         float distanceUp, distanceDown, distanceLeft, distanceRight;
-        distanceUp = distanceDown = distanceLeft = distanceRight = float.MaxValue;
-        CalculateDistancesFromCellNeighborToTarget(ref distanceUp, ref distanceDown, ref distanceLeft, ref distanceRight);
-        ChooseMinimumDistance(distanceUp, distanceDown, distanceLeft, distanceRight);
+
+        switch (ghostState)
+        {
+            case GhostState.Frightened:
+                distanceUp = distanceDown = distanceLeft = distanceRight = float.MinValue;
+                CalculateDistancesFromCellNeighborToTarget(ref distanceUp, ref distanceDown, ref distanceLeft, ref distanceRight);
+                ChooseMaxDistance(distanceUp, distanceDown, distanceLeft, distanceRight);
+                break;
+            default:
+                distanceUp = distanceDown = distanceLeft = distanceRight = float.MaxValue;
+                CalculateDistancesFromCellNeighborToTarget(ref distanceUp, ref distanceDown, ref distanceLeft, ref distanceRight);
+                ChooseMinimumDistance(distanceUp, distanceDown, distanceLeft, distanceRight);
+                break;
+        }
+
     }
 
-    private void ChooseMinimumDistance(float dist1, float dist2, float dist3, float dist4)
+    private void ChooseMinimumDistance(float distanceUp, float distanceDown, float distanceLeft, float distanceRight)
     {
-        var min = Mathf.Min(dist1, dist2, dist3, dist4);
+        var min = Mathf.Min(distanceUp, distanceDown, distanceLeft, distanceRight);
 
-        if (min == dist1)
+        if (min == distanceUp)
         {
             SetGhostDirection(Vector2.up);
         }
 
-        else if (min == dist2)
+        else if (min == distanceDown)
         {
             SetGhostDirection(Vector2.down);
         }
 
-        else if (min == dist3)
+        else if (min == distanceLeft)
         {
             SetGhostDirection(Vector2.left);
         }
 
-        else if (min == dist4)
+        else if (min == distanceRight)
+        {
+            SetGhostDirection(Vector2.right);
+        }
+    }
+    private void ChooseMaxDistance(float distanceUp, float distanceDown, float distanceLeft, float distanceRight)
+    {
+        var max = Mathf.Max(distanceUp, distanceDown, distanceLeft, distanceRight);
+
+        if (max == distanceUp)
+        {
+            SetGhostDirection(Vector2.up);
+        }
+
+        else if (max == distanceDown)
+        {
+            SetGhostDirection(Vector2.down);
+        }
+
+        else if (max == distanceLeft)
+        {
+            SetGhostDirection(Vector2.left);
+        }
+
+        else if (max == distanceRight)
         {
             SetGhostDirection(Vector2.right);
         }
     }
 
-    private void CalculateDistancesFromCellNeighborToTarget(ref float dist1, ref float dist2, ref float dist3, ref float dist4)
+    private void CalculateDistancesFromCellNeighborToTarget(ref float distanceUp, ref float distanceDown, ref float distanceLeft, ref float distanceRight)
     {
         if (CellIsValid(_currentCell.up) && !(_ghostMovement.Direction.y < 0))
         {
-            dist1 = MazeManager.Instance.distance(_currentCell.up, _targetCell);
+            distanceUp = MazeManager.Instance.distance(_currentCell.up, _targetCell);
         }
 
         if (CellIsValid(_currentCell.down) && !(_ghostMovement.Direction.y > 0))
         {
-            dist2 = MazeManager.Instance.distance(_currentCell.down, _targetCell);
+            distanceDown = MazeManager.Instance.distance(_currentCell.down, _targetCell);
         }
 
         if (CellIsValid(_currentCell.left) && !(_ghostMovement.Direction.x > 0))
         {
-            dist3 = MazeManager.Instance.distance(_currentCell.left, _targetCell);
+            distanceLeft = MazeManager.Instance.distance(_currentCell.left, _targetCell);
         }
 
         if (CellIsValid(_currentCell.right) && !(_ghostMovement.Direction.x < 0))
         {
-            dist4 = MazeManager.Instance.distance(_currentCell.right, _targetCell);
+            distanceRight = MazeManager.Instance.distance(_currentCell.right, _targetCell);
         }
     }
 
@@ -205,6 +297,13 @@ public class GhostAI : MonoBehaviour
         Pinky,
         Inky,
         Clyde
+    }
+
+public enum GhostState
+    {
+        Chase,
+        Scatter,
+        Frightened
     }
 
 }

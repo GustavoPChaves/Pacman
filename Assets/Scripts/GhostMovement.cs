@@ -28,14 +28,14 @@ public class GhostMovement : MonoBehaviour
         set
         {
             _direction = value;
-            //SetMovementAnimation(_direction);
+            SetMovementAnimation(_direction);
         }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        //_animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
     }
 
@@ -55,13 +55,18 @@ public class GhostMovement : MonoBehaviour
        
         Vector2 currentPos = transform.position;
         Vector2 position = Vector2.MoveTowards(currentPos, _targetPosition, _speed);
-        GetComponent<Rigidbody2D>().MovePosition(position);
+        _rigidbody2D.MovePosition(position);
     }
     public bool HasReachTarget()
     {
         Vector2 currentPos = transform.position;
 
         return Vector3.Distance(currentPos, _targetPosition) < 0.0000001;
+    }
+
+    public void Frightened(bool isFrightened)
+    {
+        _animator.SetBool("Frightened", isFrightened);
     }
 
 }

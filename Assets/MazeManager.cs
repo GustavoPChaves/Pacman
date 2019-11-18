@@ -142,7 +142,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     }
     void OnDrawGizmos()
     {
-        if (debugEnabled)
+        if (debugEnabled && _mazeList != null)
         {
             foreach (MazeCell cell in _mazeList)
             {

@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 public class MazeCell
 {
     public float positionX { get; set; }
@@ -29,4 +31,6 @@ public class MazeCell
         isIntersection = mazeCell.isIntersection;
         adjacentCount = mazeCell.adjacentCount;
     }
+
+
 }
