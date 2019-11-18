@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,11 +15,17 @@ public class GhostAI : MonoBehaviour
     [SerializeField]
     GhostType _ghostType;
 
-    MazeCell _currentCell, _targetCell, _nextCell;
+    MazeCell _currentCell, _targetCell;
 
     Vector2Int positionInMaze = new Vector2Int(15, 20);
 
     GhostState _currentState = GhostState.Scatter;
+
+    const float _scatterTime = 7;
+    const float _chaseTime = 20;
+    const float _frightenedTime = 7;
+
+    int _stateCycleCount = 0;
 
     public GhostState CurrentState
     {
@@ -95,6 +102,44 @@ public class GhostAI : MonoBehaviour
         _ghostMovement = GetComponent<GhostMovement>();
         InitializeGhost();
     }
+
+    void ChangeState()
+    {
+        if(_stateCycleCount % 2 == 0)
+        {
+            StartCoroutine(ChangeState(GhostState.Scatter, _scatterTime));
+        }
+        else
+        {
+            StartCoroutine(ChangeState(GhostState.Chase, _chaseTime));
+
+        }
+    }
+
+
+    IEnumerator ChangeState(GhostState ghostState, float stateTime)
+    {
+        if (_stateCycleCount > 8)
+        {
+            CurrentState = GhostState.Chase;
+            yield break;
+        }
+
+        CurrentState = ghostState;
+        _stateCycleCount++;
+
+        yield return new WaitForSeconds(stateTime);
+
+        switch (ghostState)
+        {
+            case GhostState.Chase:
+                StartCoroutine(ChangeState(GhostState.Scatter, _scatterTime));
+                break;
+            case GhostState.Scatter:
+                StartCoroutine(ChangeState(GhostState.Chase, _chaseTime));
+                break;
+        }
+    }
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -103,16 +148,15 @@ public class GhostAI : MonoBehaviour
 
     public void InitializeGhost()
     {
-        SetGhostDirection(Vector2.right);
-        CurrentState = GhostState.Frightened;
+        SetGhostDirection(Vector2.left);
+        ChangeState();
+
     }
 
     void ChaseAI()
     {
-        Vector2 currentPos = transform.position;
         _currentCell = MazeManager.Instance.CellFromPosition(positionInMaze);
         _targetCell = _targetFunction();
-        _nextCell = GetNextCell(_currentCell);
 
         if (!_ghostMovement.HasReachTarget())
         {
@@ -121,6 +165,8 @@ public class GhostAI : MonoBehaviour
         }
         ChooseDirection(CurrentState);
     }
+
+
 
     bool CellIsValid(MazeCell cell)
     {
@@ -219,27 +265,6 @@ public class GhostAI : MonoBehaviour
         }
     }
 
-    private MazeCell GetNextCell(MazeCell currentCell)
-    {
-        // get the next tile according to Direction
-        if (_ghostMovement.Direction.IsVectorRight())
-        {
-            return currentCell.right;
-        }
-        if (_ghostMovement.Direction.IsVectorLeft())
-        {
-            return currentCell.left;
-        }
-        if (_ghostMovement.Direction.IsVectorUp())
-        {
-            return currentCell.up;
-        }
-        if (_ghostMovement.Direction.IsVectorDown())
-        {
-            return currentCell.down;
-        }
-        return null;
-    }
     void SetGhostDirection(Vector2 direction)
     {
         _ghostMovement.Direction = direction;

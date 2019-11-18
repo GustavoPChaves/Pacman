@@ -32,6 +32,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     {
         _score += score;
         _UIController.SetScore(_score);
+        
     }
 
 }
