@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
@@ -9,8 +10,13 @@ public class GhostMovement : MonoBehaviour
     Vector2 _direction;
     Animator _animator;
     Rigidbody2D _rigidbody2D;
+    Collider2D _collider;
+
 
     Vector2 _targetPosition;
+
+    [SerializeField]
+    private Vector2 _startPos;
 
     public Vector2 TargetPosition
     {
@@ -68,5 +74,17 @@ public class GhostMovement : MonoBehaviour
     {
         _animator.SetBool("Frightened", isFrightened);
     }
+
+    public void VerticalTilt()
+    {
+        Vector2 currentPos = transform.position;
+        Vector2 tiltPos = _startPos;
+        tiltPos.y += Mathf.PingPong(Time.time, 1);
+        Vector2 position = Vector2.MoveTowards(currentPos, tiltPos, _speed);
+        _rigidbody2D.MovePosition(position);
+
+    }
+
+
 
 }

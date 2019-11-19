@@ -167,6 +167,10 @@ public class GhostAI : MonoBehaviour
     {
         if(_isActive)
             ChaseAI();
+        else
+        {
+            _ghostMovement.VerticalTilt();
+        }
     }
     private void Update()
     {

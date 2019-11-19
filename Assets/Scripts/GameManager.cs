@@ -33,7 +33,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     public void SetScore(int score)
     {
         pacdotCount++;
-        CheckWin();
+        CheckPelletsCollected();
         _score += score;
         _UIController.SetScore(_score);
         
@@ -53,6 +53,23 @@ public class GameManager : GenericSingletonClass<GameManager>
         {
             print("win");
         }
+    }
+
+    private void CheckPelletsCollected()
+    {
+        if (pacdotCount == 1)
+        {
+            ghosts[1].SetActive(true);
+        }
+        if (pacdotCount == 30)
+        {
+            ghosts[2].SetActive(true);
+        }
+        if (pacdotCount == 100)
+        {
+            ghosts[3].SetActive(true);
+        }
+        CheckWin();
     }
 
 }
