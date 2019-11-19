@@ -21,11 +21,15 @@ public class GhostAI : MonoBehaviour
 
     GhostState _currentState = GhostState.Scatter;
 
+    Coroutine changeStateCoroutine;
+
+    bool _canReverse;
+
     const float _scatterTime = 7;
     const float _chaseTime = 20;
     const float _frightenedTime = 7;
 
-    int _stateCycleCount = 0;
+    int _stateCycleCount;
 
     public GhostState CurrentState
     {
@@ -105,45 +109,63 @@ public class GhostAI : MonoBehaviour
 
     void ChangeState()
     {
-        if(_stateCycleCount % 2 == 0)
+        if (_stateCycleCount > 7)
         {
-            StartCoroutine(ChangeState(GhostState.Scatter, _scatterTime));
+            CurrentState = GhostState.Chase;
+            return;
+        }
+
+        if (_stateCycleCount % 2 == 0)
+        {
+            changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Scatter, _scatterTime));
         }
         else
         {
-            StartCoroutine(ChangeState(GhostState.Chase, _chaseTime));
-
+            changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Chase, _chaseTime));
         }
+        _stateCycleCount++;
+
     }
-
-
+    void SetFrightened()
+    {
+        StopChangeStateCoroutine();
+        changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Frightened, _frightenedTime));
+    }
     IEnumerator ChangeState(GhostState ghostState, float stateTime)
     {
-        if (_stateCycleCount > 8)
-        {
-            CurrentState = GhostState.Chase;
-            yield break;
-        }
-
         CurrentState = ghostState;
-        _stateCycleCount++;
+
+        StartCoroutine(CanReverse());
 
         yield return new WaitForSeconds(stateTime);
 
-        switch (ghostState)
-        {
-            case GhostState.Chase:
-                StartCoroutine(ChangeState(GhostState.Scatter, _scatterTime));
-                break;
-            case GhostState.Scatter:
-                StartCoroutine(ChangeState(GhostState.Chase, _chaseTime));
-                break;
-        }
+        ChangeState();
+    }
+    void StopChangeStateCoroutine()
+    {
+        if (changeStateCoroutine == null)
+            return;
+        StopCoroutine(changeStateCoroutine);
+    }
+
+    IEnumerator CanReverse()
+    {
+        _canReverse = true;
+
+        yield return new WaitForSeconds(0.3f);
+        _canReverse = false;
     }
     // Update is called once per frame
     void FixedUpdate()
     {
         ChaseAI();
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            SetFrightened();
+        }
     }
 
     public void InitializeGhost()
@@ -244,22 +266,22 @@ public class GhostAI : MonoBehaviour
 
     private void CalculateDistancesFromCellNeighborToTarget(ref float distanceUp, ref float distanceDown, ref float distanceLeft, ref float distanceRight)
     {
-        if (CellIsValid(_currentCell.up) && !(_ghostMovement.Direction.y < 0))
+        if (CellIsValid(_currentCell.up) && (!(_ghostMovement.Direction.y < 0) || _canReverse) )
         {
             distanceUp = MazeManager.Instance.distance(_currentCell.up, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.down) && !(_ghostMovement.Direction.y > 0))
+        if (CellIsValid(_currentCell.down) && (!(_ghostMovement.Direction.y > 0) || _canReverse))
         {
             distanceDown = MazeManager.Instance.distance(_currentCell.down, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.left) && !(_ghostMovement.Direction.x > 0))
+        if (CellIsValid(_currentCell.left) && (!(_ghostMovement.Direction.x > 0) || _canReverse))
         {
             distanceLeft = MazeManager.Instance.distance(_currentCell.left, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.right) && !(_ghostMovement.Direction.x < 0))
+        if (CellIsValid(_currentCell.right) && (!(_ghostMovement.Direction.x < 0) || _canReverse))
         {
             distanceRight = MazeManager.Instance.distance(_currentCell.right, _targetCell);
         }
