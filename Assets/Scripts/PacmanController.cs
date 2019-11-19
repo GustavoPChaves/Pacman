@@ -61,6 +61,10 @@ public class PacmanController : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("Ghost"))//todo do not lose life when frightened
+        {
+            return;
+        }
         GameManager.Instance.SetScore(GetValueFromTriggerCollision(collision));
         collision.gameObject.SetActive(false);
         PlayPacmanSound(collision.tag);

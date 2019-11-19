@@ -10,7 +10,6 @@ public class GhostMovement : MonoBehaviour
     Vector2 _direction;
     Animator _animator;
     Rigidbody2D _rigidbody2D;
-    Collider2D _collider;
 
 
     Vector2 _targetPosition;
@@ -84,7 +83,5 @@ public class GhostMovement : MonoBehaviour
         _rigidbody2D.MovePosition(position);
 
     }
-
-
 
 }

@@ -37,6 +37,13 @@ public class GhostAI : MonoBehaviour
         _isActive = option;
     }
 
+    MazeCell ReturnToStartPosition()
+    {
+        StopChangeStateCoroutine();
+        return MazeManager.Instance.CellFromPosition(new Vector2Int(15, 20));
+
+    }
+
     int _stateCycleCount;
 
     public GhostState CurrentState
@@ -44,6 +51,8 @@ public class GhostAI : MonoBehaviour
         get => _currentState;
         set
         {
+            if (value == GhostState.Dead)
+                return;
             _currentState = value;
             _ghostMovement.Frightened(_currentState == GhostState.Frightened);
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
@@ -62,7 +71,10 @@ public class GhostAI : MonoBehaviour
 
             case GhostState.Frightened:
                 return GetTargetChaseFunctionWithGhostType(ghostType);
-                
+
+            case GhostState.Dead:
+                return () => ReturnToStartPosition();
+
 
         }
 
@@ -362,9 +374,24 @@ public enum GhostState
     {
         Chase,
         Scatter,
-        Frightened
+        Frightened,
+        Dead
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(_currentState == GhostState.Frightened)
+        {
+            CurrentState = GhostState.Dead;
+            ReturnToStartPosition();
+
+        }
+        else
+        {
+            GameManager.Instance.LostLife();
+
+        }
+    }
 }
 
 

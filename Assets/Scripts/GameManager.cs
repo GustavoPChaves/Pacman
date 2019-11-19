@@ -13,6 +13,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     public GhostAI[] ghosts;
 
     int _score = 0;
+    int lives = 5;
 
     public PacmanController Pacman { get => _pacman; private set => _pacman = value; }
     public GhostAI Blinky { get => _blinky; private set => _blinky = value; }
@@ -70,6 +71,12 @@ public class GameManager : GenericSingletonClass<GameManager>
             ghosts[3].SetActive(true);
         }
         CheckWin();
+    }
+
+    public void LostLife()
+    {
+        lives--;//todo restart game when 0;
+        _UIController.SetLives(lives);
     }
 
 }
