@@ -62,8 +62,10 @@ public class PacmanController : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         GameManager.Instance.SetScore(GetValueFromTriggerCollision(collision));
+        collision.gameObject.SetActive(false);
         PlayPacmanSound(collision.tag);
     }
+
     void PlayPacmanSound(string type)
     {
         if (type.Equals("Pellet"))

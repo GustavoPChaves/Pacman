@@ -29,6 +29,14 @@ public class GhostAI : MonoBehaviour
     const float _chaseTime = 20;
     const float _frightenedTime = 7;
 
+    [SerializeField]
+    bool _isActive;
+
+    public void SetActive(bool option)
+    {
+        _isActive = option;
+    }
+
     int _stateCycleCount;
 
     public GhostState CurrentState
@@ -37,7 +45,6 @@ public class GhostAI : MonoBehaviour
         set
         {
             _currentState = value;
-            print(value);
             _ghostMovement.Frightened(_currentState == GhostState.Frightened);
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
         }
@@ -126,7 +133,7 @@ public class GhostAI : MonoBehaviour
         _stateCycleCount++;
 
     }
-    void SetFrightened()
+    public void SetFrightened()
     {
         StopChangeStateCoroutine();
         changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Frightened, _frightenedTime));
@@ -158,7 +165,8 @@ public class GhostAI : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        ChaseAI();
+        if(_isActive)
+            ChaseAI();
     }
     private void Update()
     {
