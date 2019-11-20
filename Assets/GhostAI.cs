@@ -52,6 +52,7 @@ public class GhostAI : MonoBehaviour
         {
             _currentState = value;
             _ghostMovement.Frightened(_currentState == GhostState.Frightened);
+            print(_currentState == GhostState.Frightened);
             _ghostMovement.Dead(_currentState == GhostState.Dead);
 
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
