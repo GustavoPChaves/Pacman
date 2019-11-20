@@ -64,7 +64,7 @@ public class PacmanController : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Ghost"))//todo do not lose life when frightened
+        if (collision.CompareTag("Ghost"))
         {
             return;
         }

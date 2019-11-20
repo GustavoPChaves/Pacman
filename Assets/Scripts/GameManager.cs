@@ -28,8 +28,7 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     List<GameObject> pacdotsEaten, energizersEaten;
 
-    //int ghostsEaten;
-    //Todo game global speed ghost points.
+    // TODO: level progression
     public void GhostEaten(Vector2 position)
     {
         ghostsEaten++;
@@ -102,7 +101,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     {
         if(pacdotCount >= 333)
         {
-            print("win");
+            RestartGame();
         }
     }
 
@@ -165,6 +164,7 @@ public class GameManager : GenericSingletonClass<GameManager>
             RestartGame();
             return;
         }
+
         ResetGhosts();
         ResetPacman();
         StartCoroutine(PauseTimeScale(1));
