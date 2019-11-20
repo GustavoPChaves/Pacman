@@ -68,7 +68,7 @@ public class PacmanController : MonoBehaviour
         {
             return;
         }
-        GameManager.Instance.SetScore(GetValueFromTriggerCollision(collision));
+        GameManager.Instance.SetScore(GetValueFromTriggerCollision(collision), collision.gameObject);
         collision.gameObject.SetActive(false);
         PlayPacmanSound(collision.tag);
     }

@@ -10,6 +10,11 @@ public class UIController : MonoBehaviour
     [SerializeField]
     GameObject _ready;
 
+    [SerializeField]
+    RectTransform worldCanvas;
+    [SerializeField]
+    Text ghostScore;
+
 
     // Start is called before the first frame update
     void Start()
@@ -44,5 +49,24 @@ public class UIController : MonoBehaviour
     public void SetReadyPanel(bool show)
     {
         _ready.SetActive(show);
+    }
+    public void SetGhostCanvasScore(Vector2 position, int score)
+    {
+        ShowGhostScore(position, score);
+        StartCoroutine(UnityUtils.DelayedAction(2, () => HideGhostScore()));
+    }
+
+    void ShowGhostScore(Vector2 position, int score)
+    {
+        worldCanvas.anchoredPosition = position;
+        ghostScore.text = score.ToString();
+        worldCanvas.gameObject.SetActive(true);
+
+    }
+
+    void HideGhostScore()
+    {
+        worldCanvas.gameObject.SetActive(false);
+
     }
 }

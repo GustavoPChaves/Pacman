@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : GenericSingletonClass<GameManager>
@@ -21,21 +22,47 @@ public class GameManager : GenericSingletonClass<GameManager>
     public GhostAI Blinky { get => _blinky; private set => _blinky = value; }
 
     public int pacdotCount;
+
+    int ghostsEaten;
+    int ghostBaseScore = 100;
+
+    List<GameObject> pacdotsEaten, energizersEaten;
+
+    //int ghostsEaten;
+    //Todo game global speed ghost points.
+    public void GhostEaten(Vector2 position)
+    {
+        ghostsEaten++;
+        int score = ghostBaseScore * (int)(Mathf.Pow(2, ghostsEaten));
+        _score += score;
+        _UIController.SetScore(_score);
+        _UIController.SetGhostCanvasScore(position, score);
+    }
+
+
     // Start is called before the first frame update
     void Start()
     {
+        pacdotsEaten = new List<GameObject>();
+        energizersEaten = new List<GameObject>();
         StartGame();
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            GotEnergizer(null);
+        }
     }
 
-    public void SetScore(int score)
+    public void SetScore(int score, GameObject pacdot)
     {
         pacdotCount++;
+
+        pacdot?.SetActive(false);
+        pacdotsEaten.Add(pacdot);
         CheckPelletsCollected();
         _score += score;
         _UIController.SetScore(_score);
@@ -44,7 +71,7 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     void StartGame()
     {
-        StartCoroutine(PauseTimeScale(5, null, () => _UIController.SetReadyPanel(false)));
+        StartCoroutine(PauseTimeScale(2, null, () => _UIController.SetReadyPanel(false)));
     }
 
     IEnumerator PauseTimeScale(float time, Action setup = null, Action completition = null)
@@ -58,8 +85,13 @@ public class GameManager : GenericSingletonClass<GameManager>
         completition?.Invoke();
     }
 
-    public void GotEnergizer()
+    public void GotEnergizer(GameObject energizer)
     {
+        ghostsEaten = 0;
+        energizer?.SetActive(false);
+        if(energizer != null)
+            energizersEaten.Add(energizer);
+
         foreach (var ghost in ghosts)
         {
             ghost.SetFrightened();
@@ -96,6 +128,7 @@ public class GameManager : GenericSingletonClass<GameManager>
         ResetPoints();
         ResetGhosts();
         ResetPacman();
+        ResetCollectibles();
        
     }
 
@@ -105,6 +138,7 @@ public class GameManager : GenericSingletonClass<GameManager>
         pacdotCount = 0;
         _score = 0;
         _UIController.SetScore(_score);
+        _UIController.SetLives(lives);
     }
 
     void ResetGhosts()
@@ -123,14 +157,16 @@ public class GameManager : GenericSingletonClass<GameManager>
      void LostLife()
     {
         lives--;
-        if(lives <= 1)
+        _UIController.SetLives(lives);
+
+        if (lives <= 0)
         {
+            print("lose");
             RestartGame();
             return;
         }
         ResetGhosts();
         ResetPacman();
-        _UIController.SetLives(lives);
         StartCoroutine(PauseTimeScale(1));
 
     }
@@ -148,6 +184,22 @@ public class GameManager : GenericSingletonClass<GameManager>
         Time.timeScale = 1;
         LostLife();
         yield break;
+    }
+
+    void ResetCollectibles()
+    {
+        foreach (var pacdot in pacdotsEaten)
+        {
+            pacdot.SetActive(true);
+        }
+        foreach (var energizer in energizersEaten)
+        {
+            energizer.SetActive(true);
+        }
+        pacdotsEaten.Clear();
+        energizersEaten.Clear();
+
+
     }
 
 

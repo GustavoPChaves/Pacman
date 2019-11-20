@@ -18,6 +18,6 @@ public class Energizer : Collectible
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        GameManager.Instance.GotEnergizer();
+        GameManager.Instance.GotEnergizer(gameObject);
     }
 }

@@ -52,7 +52,6 @@ public class GhostAI : MonoBehaviour
         {
             _currentState = value;
             _ghostMovement.Frightened(_currentState == GhostState.Frightened);
-            print(_currentState == GhostState.Frightened);
             _ghostMovement.Dead(_currentState == GhostState.Dead);
 
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
@@ -204,10 +203,7 @@ public class GhostAI : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            SetFrightened();
-        }
+
     }
 
     public void InitializeGhost()
@@ -409,6 +405,8 @@ public enum GhostState
         }
         if(_currentState == GhostState.Frightened)
         {
+            GameManager.Instance.GhostEaten(transform.position);
+
             CurrentState = GhostState.Dead;
             AudioManager.Instance.Play(AudioClipType.blueGhost);
             StartCoroutine(DramaticPause());
