@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 public class GameManager : GenericSingletonClass<GameManager>
 {
@@ -22,7 +24,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     // Start is called before the first frame update
     void Start()
     {
-
+        StartGame();
     }
 
     // Update is called once per frame
@@ -38,6 +40,22 @@ public class GameManager : GenericSingletonClass<GameManager>
         _score += score;
         _UIController.SetScore(_score);
         
+    }
+
+    void StartGame()
+    {
+        StartCoroutine(PauseTimeScale(5, null, () => _UIController.SetReadyPanel(false)));
+    }
+
+    IEnumerator PauseTimeScale(float time, Action setup = null, Action completition = null)
+    {
+        setup?.Invoke();
+
+        Time.timeScale = 0;
+        yield return new WaitForSecondsRealtime(time);
+        Time.timeScale = 1;
+
+        completition?.Invoke();
     }
 
     public void GotEnergizer()
@@ -58,25 +76,80 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     private void CheckPelletsCollected()
     {
-        if (pacdotCount == 1)
+        if (pacdotCount >= 1)
         {
             ghosts[1].SetActive(true);
         }
-        if (pacdotCount == 30)
+        if (pacdotCount >= 30)
         {
             ghosts[2].SetActive(true);
         }
-        if (pacdotCount == 100)
+        if (pacdotCount >= 100)
         {
             ghosts[3].SetActive(true);
         }
         CheckWin();
     }
 
-    public void LostLife()
+    void RestartGame()
     {
-        lives--;//todo restart game when 0;
-        _UIController.SetLives(lives);
+        ResetPoints();
+        ResetGhosts();
+        ResetPacman();
+       
     }
+
+    void ResetPoints()
+    {
+        lives = 5;
+        pacdotCount = 0;
+        _score = 0;
+        _UIController.SetScore(_score);
+    }
+
+    void ResetGhosts()
+    {
+        foreach (var ghost in ghosts)
+        {
+            ghost.Reset();
+        }
+    }
+
+    void ResetPacman()
+    {
+        _pacman.Reset();
+    }
+
+     void LostLife()
+    {
+        lives--;
+        if(lives <= 1)
+        {
+            RestartGame();
+            return;
+        }
+        ResetGhosts();
+        ResetPacman();
+        _UIController.SetLives(lives);
+        StartCoroutine(PauseTimeScale(1));
+
+    }
+
+    public void PacmanDied()
+    {
+        StartCoroutine(Die());
+    }
+
+    IEnumerator Die()
+    {
+        _pacman.Die();
+        Time.timeScale = 0;
+        yield return new WaitForSecondsRealtime(0.7f);
+        Time.timeScale = 1;
+        LostLife();
+        yield break;
+    }
+
+
 
 }

@@ -10,6 +10,7 @@ TagManager:
   - Fruits
   - Energizer
   - pacdot
+  - GhostHouse
   layers:
   - Default
   - TransparentFX
@@ -24,7 +25,7 @@ TagManager:
   - Energizer
   - Ghost
   - Pacman
-  - 
+  - GhostHouse
   - 
   - 
   - 

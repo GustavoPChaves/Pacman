@@ -10,9 +10,11 @@ public class PacmanController : MonoBehaviour
 
     [SerializeField]
     float _speed = 1;
-
+    [SerializeField]
+    Vector2 _startPosition;
     public Vector2 Direction { get => _direction; private set => _direction = value; }
 
+    bool hasDied;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,6 +29,7 @@ public class PacmanController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (hasDied) return;
         _direction.x = Input.GetAxisRaw("Horizontal");
         _direction.y = Input.GetAxisRaw("Vertical");
 
@@ -70,6 +73,7 @@ public class PacmanController : MonoBehaviour
         PlayPacmanSound(collision.tag);
     }
 
+    
     void PlayPacmanSound(string type)
     {
         if (type.Equals("Pellet"))
@@ -90,6 +94,22 @@ public class PacmanController : MonoBehaviour
         var collectible = collision.GetComponent<Collectible>();
 
         return collectible != null ? collectible.PointValue : 0;
+    }
+
+    public void Die()
+    {
+        _animator.SetBool("Die", true);
+        hasDied = true;
+        AudioManager.Instance.Play(AudioClipType.death);
+    }
+    public void Reset()
+    {
+        _animator.SetBool("Die", false);
+        hasDied = false;
+        transform.position = _startPosition;
+        _direction = Vector2.right;
+        SetMovementAnimation(_direction);
+        SetRigidbodyVelocity(_direction, _speed);
     }
 
 

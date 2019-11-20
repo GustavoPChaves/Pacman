@@ -7,6 +7,8 @@ public class UIController : MonoBehaviour
     Text _scoreText, _highScoreText;
     [SerializeField]
     Transform _livesContainer;
+    [SerializeField]
+    GameObject _ready;
 
 
     // Start is called before the first frame update
@@ -37,5 +39,10 @@ public class UIController : MonoBehaviour
         {
             _livesContainer.GetChild(i).gameObject.SetActive(i < lives);
         }
+    }
+
+    public void SetReadyPanel(bool show)
+    {
+        _ready.SetActive(show);
     }
 }

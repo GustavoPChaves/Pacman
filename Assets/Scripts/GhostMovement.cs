@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class GhostMovement : MonoBehaviour
@@ -72,6 +74,25 @@ public class GhostMovement : MonoBehaviour
     public void Frightened(bool isFrightened)
     {
         _animator.SetBool("Frightened", isFrightened);
+        if(!isFrightened)
+            _animator.SetBool("EndingFrightend", false);
+        else
+        {
+            StartCoroutine(UnityUtils.DelayedAction(5, () => EndingFrightened()));
+        }
+
+        
+    }
+
+    public void EndingFrightened()
+    {
+        _animator.SetBool("EndingFrightend", true);
+
+    }
+
+    public void Dead(bool isDead)
+    {
+        _animator.SetBool("Dead", isDead);
     }
 
     public void VerticalTilt()
@@ -84,4 +105,21 @@ public class GhostMovement : MonoBehaviour
 
     }
 
+    public void ResetPosition()
+    {
+        _targetPosition = _startPos;
+        transform.position = _startPos;
+    }
+
+}
+
+
+public static class UnityUtils
+{
+
+    public static IEnumerator DelayedAction(float time, Action action)
+    {
+        yield return new WaitForSecondsRealtime(time);
+        action?.Invoke();
+    }
 }

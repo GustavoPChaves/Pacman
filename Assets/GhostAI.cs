@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class GhostAI : MonoBehaviour
 {
@@ -39,7 +38,7 @@ public class GhostAI : MonoBehaviour
 
     MazeCell ReturnToStartPosition()
     {
-        StopChangeStateCoroutine();
+        
         return MazeManager.Instance.CellFromPosition(new Vector2Int(15, 20));
 
     }
@@ -51,12 +50,28 @@ public class GhostAI : MonoBehaviour
         get => _currentState;
         set
         {
-            if (value == GhostState.Dead)
-                return;
             _currentState = value;
             _ghostMovement.Frightened(_currentState == GhostState.Frightened);
+            _ghostMovement.Dead(_currentState == GhostState.Dead);
+
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
         }
+    }
+
+    public void Reset()
+    {
+        StopChangeStateCoroutine();
+        CurrentState = GhostState.Scatter;
+        SetActive(false);
+        positionInMaze = new Vector2Int(15, 20);
+        _ghostMovement.ResetPosition();
+        _targetCell = MazeManager.Instance.CellFromPosition(positionInMaze);
+        if(_ghostType == GhostType.Blinky)
+        {
+            SetActive(true);
+        }
+        ChangeState();
+
     }
 
     Func<MazeCell> GetTargetFunctionFromState(GhostState ghostState, GhostType ghostType)
@@ -147,6 +162,8 @@ public class GhostAI : MonoBehaviour
     }
     public void SetFrightened()
     {
+        if (CurrentState == GhostState.Dead)
+            return;
         StopChangeStateCoroutine();
         changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Frightened, _frightenedTime));
     }
@@ -364,6 +381,7 @@ public class GhostAI : MonoBehaviour
 
     public enum GhostType
     {
+
         Blinky,
         Pinky,
         Inky,
@@ -380,17 +398,35 @@ public enum GhostState
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.CompareTag("GhostHouse"))
+        {
+            if (CurrentState == GhostAI.GhostState.Dead)
+            {
+                Reset();
+            }
+            return;
+        }
         if(_currentState == GhostState.Frightened)
         {
             CurrentState = GhostState.Dead;
-            ReturnToStartPosition();
+            AudioManager.Instance.Play(AudioClipType.blueGhost);
+            StartCoroutine(DramaticPause());
+            StopChangeStateCoroutine();
 
         }
-        else
+        else if(CurrentState != GhostAI.GhostState.Dead)
         {
-            GameManager.Instance.LostLife();
+            GameManager.Instance.PacmanDied();
 
         }
+    }
+
+    IEnumerator DramaticPause()
+    {
+        Time.timeScale = 0;
+        yield return new WaitForSecondsRealtime(0.5f);
+        Time.timeScale = 1;
+          
     }
 }
 
