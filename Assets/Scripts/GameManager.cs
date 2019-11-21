@@ -15,13 +15,19 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     public GhostAI[] ghosts;
 
-    int _score = 0;
-    int lives = 5;
+    [SerializeField]
+    bool _testMode = true;
+
+    int _score;
+    int _lives = 5;
 
     public PacmanController Pacman { get => _pacman; private set => _pacman = value; }
     public GhostAI Blinky { get => _blinky; private set => _blinky = value; }
+    public int Score { get => _score; set { _score = value; _UIController.SetScore(_score); } }
 
-    public int pacdotCount;
+    public int Lives { get => _lives; set { _lives = value; _UIController.SetLives(_lives); } }
+
+public int pacdotCount;
 
     int ghostsEaten;
     int ghostBaseScore = 100;
@@ -33,8 +39,8 @@ public class GameManager : GenericSingletonClass<GameManager>
     {
         ghostsEaten++;
         int score = ghostBaseScore * (int)(Mathf.Pow(2, ghostsEaten));
-        _score += score;
-        _UIController.SetScore(_score);
+        Score += score;
+
         _UIController.SetGhostCanvasScore(position, score);
     }
 
@@ -50,9 +56,9 @@ public class GameManager : GenericSingletonClass<GameManager>
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        if (_testMode)
         {
-            GotEnergizer(null);
+            HackMethodsForTest();
         }
     }
 
@@ -63,8 +69,7 @@ public class GameManager : GenericSingletonClass<GameManager>
         pacdot?.SetActive(false);
         pacdotsEaten.Add(pacdot);
         CheckPelletsCollected();
-        _score += score;
-        _UIController.SetScore(_score);
+        Score += score;
         
     }
 
@@ -133,11 +138,9 @@ public class GameManager : GenericSingletonClass<GameManager>
 
     void ResetPoints()
     {
-        lives = 5;
+        Lives = 5;
         pacdotCount = 0;
-        _score = 0;
-        _UIController.SetScore(_score);
-        _UIController.SetLives(lives);
+        Score = 0;
     }
 
     void ResetGhosts()
@@ -155,12 +158,9 @@ public class GameManager : GenericSingletonClass<GameManager>
 
      void LostLife()
     {
-        lives--;
-        _UIController.SetLives(lives);
-
-        if (lives <= 0)
+        Lives--;
+        if (Lives <= 0)
         {
-            print("lose");
             RestartGame();
             return;
         }
@@ -198,6 +198,51 @@ public class GameManager : GenericSingletonClass<GameManager>
         }
         pacdotsEaten.Clear();
         energizersEaten.Clear();
+
+
+    }
+
+
+    public void HackMethodsForTest()
+    {
+        //Força modo frightened dos fantasmas
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            GotEnergizer(null);
+        }
+        //pode quebrar UI, mas é interessante para teste de gameplay
+        if (Input.GetKeyDown(KeyCode.Plus))
+        {
+            Lives++;
+        }
+        if (Input.GetKeyDown(KeyCode.Minus))
+        {
+            Lives--;
+        }
+        //Força saida de Clyde
+        if (Input.GetKeyDown(KeyCode.C)){
+            ghosts[3].SetActive(true);
+
+        }
+        //Força saida de Inky
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ghosts[2].SetActive(true);
+
+        }
+        //Força saida de Blnky
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            ghosts[2].SetActive(true);
+
+        }
+        //Aumenta velocidade de Pacman
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            //todo speed global;
+
+        }
+
 
 
     }

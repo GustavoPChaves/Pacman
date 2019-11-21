@@ -706,7 +706,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f6c939de5b61944bb50595347e41acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0.1
+  _baseSpeed: 0.16
   _startPos: {x: 16.5, y: 16.6}
 --- !u!212 &178970841
 SpriteRenderer:
@@ -1469,6 +1469,7 @@ MonoBehaviour:
   - {fileID: 1974708142}
   - {fileID: 1784016901}
   - {fileID: 178970839}
+  _testMode: 1
   pacdotCount: 0
 --- !u!1 &614458171
 GameObject:
@@ -3045,7 +3046,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1396675254}
   - component: {fileID: 1396675253}
-  - component: {fileID: 1396675255}
   m_Layer: 13
   m_Name: Ghost House
   m_TagString: GhostHouse
@@ -3093,18 +3093,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1396675255
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1396675252}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a8c0f2480c8bdf45a7ecfa0c0f2bb37, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1431359095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3589,7 +3577,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f6c939de5b61944bb50595347e41acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0.1
+  _baseSpeed: 0.16
   _startPos: {x: 15, y: 20}
 --- !u!212 &1531275766
 SpriteRenderer:
@@ -3874,7 +3862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f6c939de5b61944bb50595347e41acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0.1
+  _baseSpeed: 0.16
   _startPos: {x: 12.5, y: 16.6}
 --- !u!212 &1784016903
 SpriteRenderer:
@@ -4502,7 +4490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f6c939de5b61944bb50595347e41acc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 0.1
+  _baseSpeed: 0.16
   _startPos: {x: 14.5, y: 16.6}
 --- !u!212 &1974708144
 SpriteRenderer:

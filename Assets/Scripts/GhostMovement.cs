@@ -8,13 +8,15 @@ using UnityEngine;
 public class GhostMovement : MonoBehaviour
 {
     [SerializeField]
-    float _speed = 1;
+    float _baseSpeed = 1;
+    float _speed;
     Vector2 _direction;
     Animator _animator;
     Rigidbody2D _rigidbody2D;
 
 
     Vector2 _targetPosition;
+    GhostAI _ghostAI;
 
     [SerializeField]
     private Vector2 _startPos;
@@ -39,11 +41,14 @@ public class GhostMovement : MonoBehaviour
         }
     }
 
+    public float Speed { get { return _speed = GetSpeedBasedOnGhostState(); } private set => _speed = value; }
+
     // Start is called before the first frame update
     void Awake()
     {
         _animator = GetComponent<Animator>();
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        _ghostAI = GetComponent<GhostAI>();
     }
 
     // Update is called once per frame
@@ -61,7 +66,7 @@ public class GhostMovement : MonoBehaviour
     {
        
         Vector2 currentPos = transform.position;
-        Vector2 position = Vector2.MoveTowards(currentPos, _targetPosition, _speed);
+        Vector2 position = Vector2.MoveTowards(currentPos, _targetPosition, Speed);
         _rigidbody2D.MovePosition(position);
     }
     public bool HasReachTarget()
@@ -100,7 +105,7 @@ public class GhostMovement : MonoBehaviour
         Vector2 currentPos = transform.position;
         Vector2 tiltPos = _startPos;
         tiltPos.y += Mathf.PingPong(Time.time, 1);
-        Vector2 position = Vector2.MoveTowards(currentPos, tiltPos, _speed);
+        Vector2 position = Vector2.MoveTowards(currentPos, tiltPos, Speed);
         _rigidbody2D.MovePosition(position);
 
     }
@@ -109,6 +114,15 @@ public class GhostMovement : MonoBehaviour
     {
         _targetPosition = _startPos;
         transform.position = _startPos;
+    }
+
+    float GetSpeedBasedOnGhostState()
+    {
+        if (_ghostAI.CurrentState == GhostAI.GhostState.Dead)
+            return _baseSpeed * 2f;
+        if (_ghostAI.CurrentState == GhostAI.GhostState.Frightened)
+            return _baseSpeed * 0.5f;
+        return _baseSpeed;
     }
 
 }

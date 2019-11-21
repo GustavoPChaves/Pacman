@@ -397,7 +397,7 @@ public enum GhostState
     {
         if (collision.CompareTag("GhostHouse"))
         {
-            if (CurrentState == GhostAI.GhostState.Dead)
+            if (CurrentState == GhostState.Dead)
             {
                 Reset();
             }
