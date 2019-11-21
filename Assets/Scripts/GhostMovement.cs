@@ -7,19 +7,22 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class GhostMovement : MonoBehaviour
 {
+    //A small number needed to compare numbers without floating point inaccuracy doubt
+    private const double _smallNumber = 0.0000001;
+
     [SerializeField]
     float _baseSpeed = 1;
-    float _speed;
-    Vector2 _direction;
-    Animator _animator;
-    Rigidbody2D _rigidbody2D;
-
-
-    Vector2 _targetPosition;
-    GhostAI _ghostAI;
 
     [SerializeField]
     private Vector2 _startPos;
+
+    Vector2 _direction;
+    Vector2 _targetPosition;
+
+    Animator _animator;
+    Rigidbody2D _rigidbody2D;
+    GhostAI _ghostAI;
+
 
     public Vector2 TargetPosition
     {
@@ -41,8 +44,6 @@ public class GhostMovement : MonoBehaviour
         }
     }
 
-    public float Speed { get { return _speed = GetSpeedBasedOnGhostState(); } private set => _speed = value; }
-
     // Start is called before the first frame update
     void Awake()
     {
@@ -51,11 +52,6 @@ public class GhostMovement : MonoBehaviour
         _ghostAI = GetComponent<GhostAI>();
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-
-    }
     void SetMovementAnimation(Vector2 direction)
     {
         _animator.SetFloat("Horizontal", direction.x);
@@ -64,35 +60,42 @@ public class GhostMovement : MonoBehaviour
 
     public void MoveToTargetPosition()
     {
-       
-        Vector2 currentPos = transform.position;
-        Vector2 position = Vector2.MoveTowards(currentPos, _targetPosition, Speed);
+        Vector2 currentPosition = transform.position;
+        Vector2 position = Vector2.MoveTowards(currentPosition, _targetPosition, GetSpeedBasedOnGhostState());
         _rigidbody2D.MovePosition(position);
     }
+
     public bool HasReachTarget()
     {
-        Vector2 currentPos = transform.position;
-
-        return Vector3.Distance(currentPos, _targetPosition) < 0.0000001;
+        Vector2 currentPosition = transform.position;
+        return Vector3.Distance(currentPosition, _targetPosition) < _smallNumber;
     }
 
     public void Frightened(bool isFrightened)
     {
         _animator.SetBool("Frightened", isFrightened);
-        if(!isFrightened)
-            _animator.SetBool("EndingFrightend", false);
+
+        if (isFrightened)
+        {
+            StartCoroutine(UnityUtils.DelayedAction(GetEndindFrightenedTime(), EndingFrightened));
+
+        }
         else
         {
-            StartCoroutine(UnityUtils.DelayedAction(5, () => EndingFrightened()));
-        }
+            _animator.SetBool("EndingFrightend", false);
 
-        
+        }
     }
 
     public void EndingFrightened()
     {
         _animator.SetBool("EndingFrightend", true);
 
+    }
+
+    float GetEndindFrightenedTime()
+    {
+        return _ghostAI.FrightenedTime * 0.75f;
     }
 
     public void Dead(bool isDead)
@@ -105,7 +108,7 @@ public class GhostMovement : MonoBehaviour
         Vector2 currentPos = transform.position;
         Vector2 tiltPos = _startPos;
         tiltPos.y += Mathf.PingPong(Time.time, 1);
-        Vector2 position = Vector2.MoveTowards(currentPos, tiltPos, Speed);
+        Vector2 position = Vector2.MoveTowards(currentPos, tiltPos, GetSpeedBasedOnGhostState());
         _rigidbody2D.MovePosition(position);
 
     }
@@ -123,17 +126,5 @@ public class GhostMovement : MonoBehaviour
         if (_ghostAI.CurrentState == GhostAI.GhostState.Frightened)
             return _baseSpeed * 0.5f;
         return _baseSpeed;
-    }
-
-}
-
-
-public static class UnityUtils
-{
-
-    public static IEnumerator DelayedAction(float time, Action action)
-    {
-        yield return new WaitForSecondsRealtime(time);
-        action?.Invoke();
     }
 }

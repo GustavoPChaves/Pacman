@@ -15,30 +15,16 @@ public class UIController : MonoBehaviour
     [SerializeField]
     Text ghostScore;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
-    public void SetScore(int score)
+    public void UpdateScore(int score)
     {
         _scoreText.text = "Score: " + score;
     }
-    public void SetHighScore(int score)
+    public void UpdateHighscore(int score)
     {
         _highScoreText.text = "Highscore: " + score;
     }
 
-    public void SetLives(int lives)
+    public void UpdateLives(int lives)
     {
         for (int i = 0; i < _livesContainer.childCount; i++)
         {
@@ -61,7 +47,6 @@ public class UIController : MonoBehaviour
         worldCanvas.anchoredPosition = position;
         ghostScore.text = score.ToString();
         worldCanvas.gameObject.SetActive(true);
-
     }
 
     void HideGhostScore()

@@ -4,17 +4,19 @@
 public class PacmanController : MonoBehaviour
 {
 
-    Vector2 _direction;
-    Animator _animator;
-    Rigidbody2D _rigidbody2D;
-
     [SerializeField]
     float _speed = 1;
     [SerializeField]
     Vector2 _startPosition;
+
+    Vector2 _direction;
+    Animator _animator;
+    Rigidbody2D _rigidbody2D;
+
     public Vector2 Direction { get => _direction; private set => _direction = value; }
 
     bool hasDied;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,25 +45,28 @@ public class PacmanController : MonoBehaviour
             SetMovementAnimation(_direction);
         }
     }
+
     void SetRigidbodyVelocity(Vector2 direction, float speed)
     {
         if (!direction.IsVectorZero())
             _rigidbody2D.velocity = speed * direction.normalized;
     }
+
     void SetMovementAnimation(Vector2 direction)
     {
         _animator.SetFloat("Horizontal", direction.x);
         _animator.SetFloat("Vertical", direction.y);
     }
+
     bool IsValidDirection(Vector2 direction)
     {
-        // cast line from 'next to pacman' to pacman
-        // not from directly the center of next tile but just a little further from center of next tile
+        // cast line from next to pacman to checkif it can keep going
         Vector2 pos = transform.position;
         direction += new Vector2(direction.x * 0.5f, direction.y * 0.5f);
         RaycastHit2D hit = Physics2D.BoxCast(pos, Vector2.one * 0.8f, 0, direction, 1f, 1 << 8);
         return hit.collider == null;
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Ghost"))
@@ -89,10 +94,10 @@ public class PacmanController : MonoBehaviour
             AudioManager.Instance.Play(AudioClipType.blueGhost);
         }
     }
+
     int GetValueFromTriggerCollision(Collider2D collision)
     {
         var collectible = collision.GetComponent<Collectible>();
-
         return collectible != null ? collectible.PointValue : 0;
     }
 
@@ -102,6 +107,7 @@ public class PacmanController : MonoBehaviour
         hasDied = true;
         AudioManager.Instance.Play(AudioClipType.death);
     }
+
     public void Reset()
     {
         _animator.SetBool("Die", false);

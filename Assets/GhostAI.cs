@@ -5,45 +5,28 @@ using UnityEngine;
 public class GhostAI : MonoBehaviour
 {
     GhostMovement _ghostMovement;
+    Func<MazeCell> _targetFunction;
+    MazeCell _currentCell, _targetCell;
 
     [SerializeField]
     Transform _target;
 
-    Func<MazeCell> _targetFunction;
-
     [SerializeField]
     GhostType _ghostType;
 
-    MazeCell _currentCell, _targetCell;
+    GhostState _currentState = GhostState.Scatter;
 
     Vector2Int positionInMaze = new Vector2Int(15, 20);
 
-    GhostState _currentState = GhostState.Scatter;
-
     Coroutine changeStateCoroutine;
 
+    int _stateCycleCount;
     bool _canReverse;
-
-    const float _scatterTime = 7;
-    const float _chaseTime = 20;
-    const float _frightenedTime = 7;
-
-    [SerializeField]
     bool _isActive;
 
-    public void SetActive(bool option)
-    {
-        _isActive = option;
-    }
-
-    MazeCell ReturnToStartPosition()
-    {
-        
-        return MazeManager.Instance.CellFromPosition(new Vector2Int(15, 20));
-
-    }
-
-    int _stateCycleCount;
+    float _scatterTime = 7;
+    float _chaseTime = 20;
+    float _frightenedTime = 7;
 
     public GhostState CurrentState
     {
@@ -56,6 +39,22 @@ public class GhostAI : MonoBehaviour
 
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
         }
+    }
+
+    public float ScatterTime { get => _scatterTime; set => _scatterTime = value; }
+    public float ChaseTime { get => _chaseTime; set => _chaseTime = value; }
+    public float FrightenedTime { get => _frightenedTime; set => _frightenedTime = value; }
+
+
+
+    public void SetActive(bool option)
+    {
+        _isActive = option;
+    }
+
+    MazeCell ReturnToStartPosition()
+    {
+        return MazeManager.Instance.CellFromPosition(new Vector2Int(15, 20));
     }
 
     public void Reset()
@@ -208,6 +207,10 @@ public class GhostAI : MonoBehaviour
 
     public void InitializeGhost()
     {
+        if(_ghostType == GhostType.Blinky)
+        {
+            SetActive(true);
+        }
         SetGhostDirection(Vector2.left);
         ChangeState();
 

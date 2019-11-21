@@ -8,6 +8,7 @@ public class AudioManager : GenericSingletonClass<AudioManager>
     AudioClip _chompAudioClip, _deathAudioClip, _fruitAudioClip, _blueGhostAudioClip, _gameStartAudioClip;
 
     AudioSource _audioSource;
+
     // Start is called before the first frame update
     void Start()
     {

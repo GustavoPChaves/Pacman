@@ -7,49 +7,76 @@ public class GameManager : GenericSingletonClass<GameManager>
 {
     [SerializeField]
     UIController _UIController;
+
     [SerializeField]
     PacmanController _pacman;
 
     [SerializeField]
     GhostAI _blinky;
 
-    public GhostAI[] ghosts;
+    [SerializeField]
+    GhostAI[] ghosts;
 
     [SerializeField]
     bool _testMode = true;
 
     int _score;
     int _lives = 5;
+    int _pelletCount;
+    int _ghostsEaten;
+    int _ghostBaseScore = 100;
 
-    public PacmanController Pacman { get => _pacman; private set => _pacman = value; }
-    public GhostAI Blinky { get => _blinky; private set => _blinky = value; }
-    public int Score { get => _score; set { _score = value; _UIController.SetScore(_score); } }
+    float _scatterTime = 7;
+    float _chaseTime = 20;
+    float _frightenedTime = 7;
 
-    public int Lives { get => _lives; set { _lives = value; _UIController.SetLives(_lives); } }
+    List<GameObject> _pelletsEaten, _energizersEaten;
 
-public int pacdotCount;
 
-    int ghostsEaten;
-    int ghostBaseScore = 100;
+    public PacmanController Pacman { get => _pacman; }
 
-    List<GameObject> pacdotsEaten, energizersEaten;
+    public GhostAI Blinky { get => _blinky; }
+
+    public int Score
+    {
+        get => _score;
+        private set
+        {
+            _score = value;
+            _UIController.UpdateScore(_score);
+        }
+    }
+
+    public int Lives
+    {
+        get => _lives;
+        private set
+        {
+            _lives = value;
+            _UIController.UpdateLives(_lives);
+        }
+    }
 
     // TODO: level progression
+
+    /// <summary>
+    /// Calculate points based on GDD, and show the score on ghost position
+    /// </summary>
+    /// <param name="position"></param>
     public void GhostEaten(Vector2 position)
     {
-        ghostsEaten++;
-        int score = ghostBaseScore * (int)(Mathf.Pow(2, ghostsEaten));
+        _ghostsEaten++;
+        int score = _ghostBaseScore * (int)(Mathf.Pow(2, _ghostsEaten));
         Score += score;
 
         _UIController.SetGhostCanvasScore(position, score);
     }
 
-
     // Start is called before the first frame update
     void Start()
     {
-        pacdotsEaten = new List<GameObject>();
-        energizersEaten = new List<GameObject>();
+        _pelletsEaten = new List<GameObject>();
+        _energizersEaten = new List<GameObject>();
         StartGame();
     }
 
@@ -62,39 +89,35 @@ public int pacdotCount;
         }
     }
 
-    public void SetScore(int score, GameObject pacdot)
+    public void SetScore(int score, GameObject pellet)
     {
-        pacdotCount++;
+        _pelletCount++;
+        pellet?.SetActive(false);
 
-        pacdot?.SetActive(false);
-        pacdotsEaten.Add(pacdot);
+        //Save pellet reference to restart the level without instantiate again
+        _pelletsEaten.Add(pellet);
+
         CheckPelletsCollected();
         Score += score;
-        
     }
+
 
     void StartGame()
     {
-        StartCoroutine(PauseTimeScale(2, null, () => _UIController.SetReadyPanel(false)));
+        StartCoroutine(UnityUtils.PauseTimeScale(2, null, () => _UIController.SetReadyPanel(false)));
+        SetGhostStateTimes();
     }
 
-    IEnumerator PauseTimeScale(float time, Action setup = null, Action completition = null)
-    {
-        setup?.Invoke();
-
-        Time.timeScale = 0;
-        yield return new WaitForSecondsRealtime(time);
-        Time.timeScale = 1;
-
-        completition?.Invoke();
-    }
 
     public void GotEnergizer(GameObject energizer)
     {
-        ghostsEaten = 0;
+        _ghostsEaten = 0;
+
         energizer?.SetActive(false);
-        if(energizer != null)
-            energizersEaten.Add(energizer);
+
+        //Save energizer reference to restart the level without instantiate again
+        if (energizer != null)
+            _energizersEaten.Add(energizer);
 
         foreach (var ghost in ghosts)
         {
@@ -102,44 +125,56 @@ public int pacdotCount;
         }
     }
 
+    /// <summary>
+    /// Player pass a level, restart the game, increase difficult
+    /// </summary>
     private void CheckWin()
     {
-        if(pacdotCount >= 333)
+        if (_pelletCount >= 333)
         {
+            //todo show intermission
             RestartGame();
         }
     }
 
+    /// <summary>
+    /// Check if the pelet count has triggered any action defined at GDD
+    /// </summary>
     private void CheckPelletsCollected()
     {
-        if (pacdotCount >= 1)
+        //Release Inky
+        if (_pelletCount >= 1)
         {
             ghosts[1].SetActive(true);
         }
-        if (pacdotCount >= 30)
+        //Release Pinky
+        if (_pelletCount >= 30)
         {
             ghosts[2].SetActive(true);
         }
-        if (pacdotCount >= 100)
+        //Release Clyde
+        if (_pelletCount >= 100)
         {
             ghosts[3].SetActive(true);
         }
+
         CheckWin();
     }
 
+    //Restart all changeble elements of the game, scores, positions, collectibles, without having to reload the scene
     void RestartGame()
     {
         ResetPoints();
         ResetGhosts();
         ResetPacman();
         ResetCollectibles();
-       
+
     }
 
     void ResetPoints()
     {
         Lives = 5;
-        pacdotCount = 0;
+        _pelletCount = 0;
         Score = 0;
     }
 
@@ -156,7 +191,10 @@ public int pacdotCount;
         _pacman.Reset();
     }
 
-     void LostLife()
+    /// <summary>
+    /// Lose a life and restart pacman and ghost positions
+    /// </summary>
+    void LostLife()
     {
         Lives--;
         if (Lives <= 0)
@@ -167,7 +205,7 @@ public int pacdotCount;
 
         ResetGhosts();
         ResetPacman();
-        StartCoroutine(PauseTimeScale(1));
+        StartCoroutine(UnityUtils.PauseTimeScale(1));
 
     }
 
@@ -175,6 +213,7 @@ public int pacdotCount;
     {
         StartCoroutine(Die());
     }
+
 
     IEnumerator Die()
     {
@@ -186,23 +225,40 @@ public int pacdotCount;
         yield break;
     }
 
+
+    /// <summary>
+    /// Active all collectibles eaten by pacman
+    /// </summary>
     void ResetCollectibles()
     {
-        foreach (var pacdot in pacdotsEaten)
+        foreach (var pellet in _pelletsEaten)
         {
-            pacdot.SetActive(true);
+            pellet.SetActive(true);
         }
-        foreach (var energizer in energizersEaten)
+        foreach (var energizer in _energizersEaten)
         {
             energizer.SetActive(true);
         }
-        pacdotsEaten.Clear();
-        energizersEaten.Clear();
-
-
+        _pelletsEaten.Clear();
+        _energizersEaten.Clear();
     }
 
+    /// <summary>
+    /// Set GhostState times to behave according with level progression
+    /// </summary>
+    void SetGhostStateTimes()
+    {
+        foreach (var ghost in ghosts)
+        {
+            ghost.FrightenedTime = _frightenedTime;
+            ghost.ScatterTime = _scatterTime;
+            ghost.ChaseTime = _chaseTime;
+        }
+    }
 
+    /// <summary>
+    /// Some shortcuts to test the game without realy having to play it
+    /// </summary>
     public void HackMethodsForTest()
     {
         //Força modo frightened dos fantasmas
@@ -220,33 +276,19 @@ public int pacdotCount;
             Lives--;
         }
         //Força saida de Clyde
-        if (Input.GetKeyDown(KeyCode.C)){
+        if (Input.GetKeyDown(KeyCode.C))
+        {
             ghosts[3].SetActive(true);
-
         }
         //Força saida de Inky
         if (Input.GetKeyDown(KeyCode.C))
         {
             ghosts[2].SetActive(true);
-
         }
         //Força saida de Blnky
         if (Input.GetKeyDown(KeyCode.B))
         {
             ghosts[2].SetActive(true);
-
         }
-        //Aumenta velocidade de Pacman
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            //todo speed global;
-
-        }
-
-
-
     }
-
-
-
 }
