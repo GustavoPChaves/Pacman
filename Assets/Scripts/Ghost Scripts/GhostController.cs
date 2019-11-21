@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// Class responsible with physics, collision and animation of the Ghost
+/// </summary>
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
-public class GhostMovement : MonoBehaviour
+public class GhostController: MonoBehaviour
 {
     //A small number needed to compare numbers without floating point inaccuracy doubt
     private const double _smallNumber = 0.0000001;

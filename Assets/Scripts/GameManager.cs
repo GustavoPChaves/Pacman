@@ -109,7 +109,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     }
 
 
-    public void GotEnergizer(GameObject energizer)
+    public void GotEnergizer(GameObject energizer = null)
     {
         _ghostsEaten = 0;
 
@@ -138,7 +138,7 @@ public class GameManager : GenericSingletonClass<GameManager>
     }
 
     /// <summary>
-    /// Check if the pelet count has triggered any action defined at GDD
+    /// Check if the pelet count has triggered any action defined on GDD
     /// </summary>
     private void CheckPelletsCollected()
     {
@@ -261,12 +261,12 @@ public class GameManager : GenericSingletonClass<GameManager>
     /// </summary>
     public void HackMethodsForTest()
     {
-        //Força modo frightened dos fantasmas
+        //Force ghotsÚ frightened mode
         if (Input.GetKeyDown(KeyCode.E))
         {
-            GotEnergizer(null);
+            GotEnergizer();
         }
-        //pode quebrar UI, mas é interessante para teste de gameplay
+        //UI doesnt show more than 5, but lives still count.
         if (Input.GetKeyDown(KeyCode.Plus))
         {
             Lives++;
@@ -275,20 +275,20 @@ public class GameManager : GenericSingletonClass<GameManager>
         {
             Lives--;
         }
-        //Força saida de Clyde
+        //Force Clyde exit of the GhostHouse
         if (Input.GetKeyDown(KeyCode.C))
         {
             ghosts[3].SetActive(true);
         }
-        //Força saida de Inky
-        if (Input.GetKeyDown(KeyCode.C))
+        //Force Inky exit of the GhostHouse
+        if (Input.GetKeyDown(KeyCode.I))
         {
             ghosts[2].SetActive(true);
         }
-        //Força saida de Blnky
-        if (Input.GetKeyDown(KeyCode.B))
+        //Force Pinky exit of the GhostHouse
+        if (Input.GetKeyDown(KeyCode.P))
         {
-            ghosts[2].SetActive(true);
+            ghosts[1].SetActive(true);
         }
     }
 }

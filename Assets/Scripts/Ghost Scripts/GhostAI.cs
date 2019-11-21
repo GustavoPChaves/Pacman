@@ -2,9 +2,14 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// The AI was implemented with the original in mind, from http://gameinternals.com/understanding-pac-man-ghost-behavior.
+/// Based on pathfinding, the ghost pursue a target, when chase the target is the pacman, when frightened is away from pacman, when scatter is a position on the maze and when dead is the ghost house.
+/// After deciding the target, the class GhostMovement will be encharged with physics and animations.
+/// </summary>
 public class GhostAI : MonoBehaviour
 {
-    GhostMovement _ghostMovement;
+    GhostController _ghostMovement;
     Func<MazeCell> _targetFunction;
     MazeCell _currentCell, _targetCell;
 
@@ -28,6 +33,9 @@ public class GhostAI : MonoBehaviour
     float _chaseTime = 20;
     float _frightenedTime = 7;
 
+    /// <summary>
+    /// Set CurrentState of the ghost and update the target that the ghost have to pursue
+    /// </summary>
     public GhostState CurrentState
     {
         get => _currentState;
@@ -88,12 +96,9 @@ public class GhostAI : MonoBehaviour
 
             case GhostState.Dead:
                 return () => ReturnToStartPosition();
-
-
         }
 
         return GetTargetChaseFunctionWithGhostType(ghostType);
-
     }
 
     Func<MazeCell> GetTargetChaseFunctionWithGhostType(GhostType ghostType)
@@ -136,7 +141,7 @@ public class GhostAI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _ghostMovement = GetComponent<GhostMovement>();
+        _ghostMovement = GetComponent<GhostController>();
         InitializeGhost();
     }
 
@@ -200,10 +205,6 @@ public class GhostAI : MonoBehaviour
             _ghostMovement.VerticalTilt();
         }
     }
-    private void Update()
-    {
-
-    }
 
     public void InitializeGhost()
     {
@@ -213,7 +214,6 @@ public class GhostAI : MonoBehaviour
         }
         SetGhostDirection(Vector2.left);
         ChangeState();
-
     }
 
     void ChaseAI()
@@ -233,7 +233,7 @@ public class GhostAI : MonoBehaviour
 
     bool CellIsValid(MazeCell cell)
     {
-        return cell != null && !cell.occupied;
+        return cell != null && !cell.Occupied;
     }
 
     private void ChooseDirection(GhostState ghostState)
@@ -381,14 +381,13 @@ public class GhostAI : MonoBehaviour
 
     public enum GhostType
     {
-
         Blinky,
         Pinky,
         Inky,
         Clyde
     }
 
-public enum GhostState
+    public enum GhostState
     {
         Chase,
         Scatter,

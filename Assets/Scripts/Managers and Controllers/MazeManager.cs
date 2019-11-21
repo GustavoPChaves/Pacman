@@ -61,7 +61,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             else
             {
                 // if the current MazeCell is not movable
-                newMazeCell.occupied = true;
+                newMazeCell.Occupied = true;
             }
 
             mazeCells.Add(newMazeCell);
@@ -84,8 +84,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             newMazeCell.up = mazeCells[upNeighbor];
 
             // adjust adjcent MazeCell counts of each MazeCell
-            newMazeCell.adjacentCount++;
-            mazeCells[upNeighbor].adjacentCount++;
+            newMazeCell.AdjacentCount++;
+            mazeCells[upNeighbor].AdjacentCount++;
         }
     }
 
@@ -99,14 +99,14 @@ public class MazeManager : GenericSingletonClass<MazeManager>
             mazeCells[mazeCells.Count - 1].right = newMazeCell;
 
             // adjust adjcent MazeCell counts of each MazeCell
-            newMazeCell.adjacentCount++;
-            mazeCells[mazeCells.Count - 1].adjacentCount++;
+            newMazeCell.AdjacentCount++;
+            mazeCells[mazeCells.Count - 1].AdjacentCount++;
         }
     }
 
     private static bool HasUpNeighborOnPosition(int Y, List<MazeCell> mazeCells, MazeCell newMazeCell, int upNeighbor)
     {
-        return Y < 30 && !newMazeCell.occupied && !mazeCells[upNeighbor].occupied;
+        return Y < 30 && !newMazeCell.Occupied && !mazeCells[upNeighbor].Occupied;
     }
 
     private static bool HasLeftNeighborOnPosition(string line, int i)
@@ -118,8 +118,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     {
         foreach (MazeCell MazeCell in mazeCells)
         {
-            if (MazeCell.adjacentCount > 2)
-                MazeCell.isIntersection = true;
+            if (MazeCell.AdjacentCount > 2)
+                MazeCell.IsIntersection = true;
         }
     }
     //-----------------------------------------------------------------------
@@ -128,11 +128,11 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     {
         foreach (MazeCell cell in _mazeList)
         {
-            Vector3 pos = new Vector3(cell.positionX, cell.positionY, 0);
-            Vector3 up = new Vector3(cell.positionX + 0.1f, cell.positionY + 1, 0);
-            Vector3 down = new Vector3(cell.positionX - 0.1f, cell.positionY - 1, 0);
-            Vector3 left = new Vector3(cell.positionX - 1, cell.positionY + 0.1f, 0);
-            Vector3 right = new Vector3(cell.positionX + 1, cell.positionY - 0.1f, 0);
+            Vector3 pos = new Vector3(cell.PositionX, cell.PositionY, 0);
+            Vector3 up = new Vector3(cell.PositionX + 0.1f, cell.PositionY + 1, 0);
+            Vector3 down = new Vector3(cell.PositionX - 0.1f, cell.PositionY - 1, 0);
+            Vector3 left = new Vector3(cell.PositionX - 1, cell.PositionY + 0.1f, 0);
+            Vector3 right = new Vector3(cell.PositionX + 1, cell.PositionY - 0.1f, 0);
 
             if (cell.up != null) Debug.DrawLine(pos, up, Color.white, float.MaxValue);
             if (cell.down != null) Debug.DrawLine(pos, down, Color.white, float.MaxValue);
@@ -146,8 +146,8 @@ public class MazeManager : GenericSingletonClass<MazeManager>
         {
             foreach (MazeCell cell in _mazeList)
             {
-                Vector3 pos = new Vector2(cell.positionX, cell.positionY);
-                if (!cell.occupied)
+                Vector3 pos = new Vector2(cell.PositionX, cell.PositionY);
+                if (!cell.Occupied)
                 {
                     Gizmos.color = Color.white;
                     Gizmos.DrawWireSphere(pos, 0.5f);
@@ -180,7 +180,7 @@ public class MazeManager : GenericSingletonClass<MazeManager>
     // returns the distance between two cells
     public float distance(MazeCell cell1, MazeCell cell2)
     {
-        return Mathf.Sqrt(Mathf.Pow(cell1.positionX - cell2.positionX, 2) + Mathf.Pow(cell1.positionY - cell2.positionY, 2));
+        return Mathf.Sqrt(Mathf.Pow(cell1.PositionX - cell2.PositionX, 2) + Mathf.Pow(cell1.PositionY - cell2.PositionY, 2));
     }
 
 
