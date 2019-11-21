@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public class GhostAI : MonoBehaviour
 {
-    GhostController _ghostMovement;
+    GhostController _ghostController;
     Func<MazeCell> _targetFunction;
     MazeCell _currentCell, _targetCell;
 
@@ -42,36 +42,49 @@ public class GhostAI : MonoBehaviour
         set
         {
             _currentState = value;
-            _ghostMovement.Frightened(_currentState == GhostState.Frightened);
-            _ghostMovement.Dead(_currentState == GhostState.Dead);
+            _ghostController.Frightened(_currentState == GhostState.Frightened);
+            _ghostController.Dead(_currentState == GhostState.Dead);
 
             _targetFunction = GetTargetFunctionFromState(_currentState, _ghostType);
         }
     }
 
+    /// <summary>
+    /// Time of the states
+    /// </summary>
     public float ScatterTime { get => _scatterTime; set => _scatterTime = value; }
     public float ChaseTime { get => _chaseTime; set => _chaseTime = value; }
     public float FrightenedTime { get => _frightenedTime; set => _frightenedTime = value; }
 
 
-
+    /// <summary>
+    /// Set the ghost is active, get outside of the ghosthouse
+    /// </summary>
+    /// <param name="option"></param>
     public void SetActive(bool option)
     {
         _isActive = option;
     }
 
+    /// <summary>
+    /// Default Ghost Position
+    /// </summary>
+    /// <returns></returns>
     MazeCell ReturnToStartPosition()
     {
         return MazeManager.Instance.CellFromPosition(new Vector2Int(15, 20));
     }
 
+    /// <summary>
+    /// Reset Ghost StateMachine to defaults
+    /// </summary>
     public void Reset()
     {
         StopChangeStateCoroutine();
         CurrentState = GhostState.Scatter;
         SetActive(false);
         positionInMaze = new Vector2Int(15, 20);
-        _ghostMovement.ResetPosition();
+        _ghostController.ResetPosition();
         _targetCell = MazeManager.Instance.CellFromPosition(positionInMaze);
         if(_ghostType == GhostType.Blinky)
         {
@@ -81,6 +94,12 @@ public class GhostAI : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Every state has a unique target, and every ghostType has a unique behavior
+    /// </summary>
+    /// <param name="ghostState"></param>
+    /// <param name="ghostType"></param>
+    /// <returns>The unique Target behavior of the Ghost</returns>
     Func<MazeCell> GetTargetFunctionFromState(GhostState ghostState, GhostType ghostType)
     {
         switch (ghostState)
@@ -101,6 +120,11 @@ public class GhostAI : MonoBehaviour
         return GetTargetChaseFunctionWithGhostType(ghostType);
     }
 
+    /// <summary>
+    /// Every ghost has a strategy to chase the target
+    /// </summary>
+    /// <param name="ghostType"></param>
+    /// <returns></returns>
     Func<MazeCell> GetTargetChaseFunctionWithGhostType(GhostType ghostType)
     {
         switch (ghostType)
@@ -117,6 +141,11 @@ public class GhostAI : MonoBehaviour
         return GetPacmanTargetCell;
     }
 
+    /// <summary>
+    /// Every ghost has a favorite spot to walk when in scatterState
+    /// </summary>
+    /// <param name="ghostType"></param>
+    /// <returns></returns>
     MazeCell GetGhostSpotWith(GhostType ghostType)
     {
         switch (ghostType)
@@ -141,10 +170,13 @@ public class GhostAI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _ghostMovement = GetComponent<GhostController>();
+        _ghostController = GetComponent<GhostController>();
         InitializeGhost();
     }
 
+    /// <summary>
+    /// The ghosts change between chase and scatter 8 times, then enter in chase to the end
+    /// </summary>
     void ChangeState()
     {
         if (_stateCycleCount > 7)
@@ -164,6 +196,7 @@ public class GhostAI : MonoBehaviour
         _stateCycleCount++;
 
     }
+
     public void SetFrightened()
     {
         if (CurrentState == GhostState.Dead)
@@ -171,6 +204,8 @@ public class GhostAI : MonoBehaviour
         StopChangeStateCoroutine();
         changeStateCoroutine = StartCoroutine(ChangeState(GhostState.Frightened, _frightenedTime));
     }
+
+    
     IEnumerator ChangeState(GhostState ghostState, float stateTime)
     {
         CurrentState = ghostState;
@@ -188,6 +223,9 @@ public class GhostAI : MonoBehaviour
         StopCoroutine(changeStateCoroutine);
     }
 
+    /// <summary>
+    /// When a ghost change his state, it can reverse its direction, its like a hint for the player to know when to runaway from chase, or to enjoy the scatter to eat dots
+    /// </summary>
     IEnumerator CanReverse()
     {
         _canReverse = true;
@@ -195,17 +233,23 @@ public class GhostAI : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         _canReverse = false;
     }
-    // Update is called once per frame
+
+    /// <summary>
+    /// If ghost is active, it pursues a target, if not, just tilt on ghosthouse
+    /// </summary>
     void FixedUpdate()
     {
         if(_isActive)
             ChaseAI();
         else
         {
-            _ghostMovement.VerticalTilt();
+            _ghostController.VerticalTilt();
         }
     }
 
+    /// <summary>
+    /// Blinky is always outside the ghosthouse, Ghost goes left because player goes right
+    /// </summary>
     public void InitializeGhost()
     {
         if(_ghostType == GhostType.Blinky)
@@ -216,26 +260,37 @@ public class GhostAI : MonoBehaviour
         ChangeState();
     }
 
+    /// <summary>
+    /// With the current cell on maze the ghost chooses a direction to reach the target, if it reached the target already set. This is needed to prevent from change the direction undesirable
+    /// </summary>
     void ChaseAI()
     {
         _currentCell = MazeManager.Instance.CellFromPosition(positionInMaze);
         _targetCell = _targetFunction();
 
-        if (!_ghostMovement.HasReachTarget())
+        if (!_ghostController.HasReachTarget())
         {
-            _ghostMovement.MoveToTargetPosition();
+            _ghostController.MoveToTargetPosition();
             return;
         }
         ChooseDirection(CurrentState);
     }
 
 
-
+    /// <summary>
+    /// A valid cell is a cell the ghost can go without breaking the rules
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <returns></returns>
     bool CellIsValid(MazeCell cell)
     {
         return cell != null && !cell.Occupied;
     }
 
+    /// <summary>
+    /// When ghost is frightened, it chooses the furthest direction from the pacman, when chasingl, the nearest
+    /// </summary>
+    /// <param name="ghostState"></param>
     private void ChooseDirection(GhostState ghostState)
     {
         float distanceUp, distanceDown, distanceLeft, distanceRight;
@@ -305,35 +360,46 @@ public class GhostAI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// The distances to be calculated to help it choose wich one is better
+    /// </summary>
+    /// <param name="distanceUp"></param>
+    /// <param name="distanceDown"></param>
+    /// <param name="distanceLeft"></param>
+    /// <param name="distanceRight"></param>
     private void CalculateDistancesFromCellNeighborToTarget(ref float distanceUp, ref float distanceDown, ref float distanceLeft, ref float distanceRight)
     {
-        if (CellIsValid(_currentCell.up) && (!(_ghostMovement.Direction.y < 0) || _canReverse) )
+        if (CellIsValid(_currentCell.up) && (!(_ghostController.Direction.y < 0) || _canReverse) )
         {
             distanceUp = MazeManager.Instance.distance(_currentCell.up, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.down) && (!(_ghostMovement.Direction.y > 0) || _canReverse))
+        if (CellIsValid(_currentCell.down) && (!(_ghostController.Direction.y > 0) || _canReverse))
         {
             distanceDown = MazeManager.Instance.distance(_currentCell.down, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.left) && (!(_ghostMovement.Direction.x > 0) || _canReverse))
+        if (CellIsValid(_currentCell.left) && (!(_ghostController.Direction.x > 0) || _canReverse))
         {
             distanceLeft = MazeManager.Instance.distance(_currentCell.left, _targetCell);
         }
 
-        if (CellIsValid(_currentCell.right) && (!(_ghostMovement.Direction.x < 0) || _canReverse))
+        if (CellIsValid(_currentCell.right) && (!(_ghostController.Direction.x < 0) || _canReverse))
         {
             distanceRight = MazeManager.Instance.distance(_currentCell.right, _targetCell);
         }
     }
 
+    /// <summary>
+    /// Call ghost controller to set the direction and updates the position in maze
+    /// </summary>
+    /// <param name="direction"></param>
     void SetGhostDirection(Vector2 direction)
     {
-        _ghostMovement.Direction = direction;
+        _ghostController.Direction = direction;
         positionInMaze.x += (int)direction.x;
         positionInMaze.y += (int)direction.y;
-        _ghostMovement.TargetPosition = positionInMaze; 
+        _ghostController.TargetPosition = positionInMaze; 
     }
 
     protected MazeCell GetPacmanTargetCell()
@@ -342,6 +408,11 @@ public class GhostAI : MonoBehaviour
         _targetCell = MazeManager.Instance.CellFromPosition(targetPos);
         return _targetCell;
     }
+
+    /// <summary>
+    /// Pinky has a unique strategy, it pursues 4 tiles ahead the pacman, trying to cut its path
+    /// </summary>
+    /// <returns></returns>
     protected MazeCell GetFourUnitsAheadPacmanTargetCell()
     {
         Vector2 targetPos = _target.position;
@@ -349,6 +420,10 @@ public class GhostAI : MonoBehaviour
         _targetCell = MazeManager.Instance.CellFromPosition(targetPos);
         return _targetCell;
     }
+    /// <summary>
+    /// Inky has a unique strategy, its target is the double length of vector from blinky to pacman
+    /// </summary>
+    /// <returns></returns>
     protected MazeCell AheadFromBlinkyTargetCell()
     {
         Vector2 targetPos = _target.position;
@@ -358,13 +433,17 @@ public class GhostAI : MonoBehaviour
 
         var positionBasedOnBLinkyPosition = targetPos +  ( targetPos - blinkyPos);
 
-        Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), positionBasedOnBLinkyPosition, Color.red, 2);
-        Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), targetPos, Color.green, 2);
+        //Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), positionBasedOnBLinkyPosition, Color.red, 2);
+        //Debug.DrawLine(new Vector2(blinkyPos.x, blinkyPos.y), targetPos, Color.green, 2);
 
         _targetCell = MazeManager.Instance.CellFromPosition(positionBasedOnBLinkyPosition);
 
         return _targetCell;
     }
+    /// <summary>
+    /// Clyde has a unique strategy, it pursues the pacman, but when it is 8 tiles close, it moves to its spot
+    /// </summary>
+    /// <returns></returns>
     protected MazeCell DistanceBasedTargetCell()
     {
         Vector2 targetPos = _target.position;
@@ -395,6 +474,12 @@ public class GhostAI : MonoBehaviour
         Dead
     }
 
+    /// <summary>
+    /// When dead and trigger the ghosthouse, ghost has to be reseted
+    /// If frightened, it was eaten by the pacman
+    /// But is it is not dead, the pacman is
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("GhostHouse"))
@@ -422,6 +507,10 @@ public class GhostAI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When a ghost is eaten, the game pauses very fast to give a feel of accomplishment
+    /// </summary>
+    /// <returns></returns>
     IEnumerator DramaticPause()
     {
         Time.timeScale = 0;

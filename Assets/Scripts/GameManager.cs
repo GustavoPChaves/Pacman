@@ -57,8 +57,6 @@ public class GameManager : GenericSingletonClass<GameManager>
         }
     }
 
-    // TODO: level progression
-
     /// <summary>
     /// Calculate points based on GDD, and show the score on ghost position
     /// </summary>

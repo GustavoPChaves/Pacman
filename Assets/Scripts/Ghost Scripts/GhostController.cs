@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Class responsible with physics, collision and animation of the Ghost
+/// Class responsible with physics, collision and animation of the Ghost.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CircleCollider2D))]
 public class GhostController: MonoBehaviour
@@ -25,7 +25,9 @@ public class GhostController: MonoBehaviour
     Rigidbody2D _rigidbody2D;
     GhostAI _ghostAI;
 
-
+    /// <summary>
+    /// TargetPosition of the ghost, need to be RoundToInt because is used in an array for pathfinding
+    /// </summary>
     public Vector2 TargetPosition
     {
         get => _targetPosition;
@@ -36,6 +38,9 @@ public class GhostController: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set direction and Update the animation
+    /// </summary>
     public Vector2 Direction
     {
         get => _direction;
@@ -73,6 +78,10 @@ public class GhostController: MonoBehaviour
         return Vector3.Distance(currentPosition, _targetPosition) < _smallNumber;
     }
 
+    /// <summary>
+    /// Update animation Frightened and schedule the blinking ending of that state
+    /// </summary>
+    /// <param name="isFrightened"></param>
     public void Frightened(bool isFrightened)
     {
         _animator.SetBool("Frightened", isFrightened);
@@ -105,6 +114,9 @@ public class GhostController: MonoBehaviour
         _animator.SetBool("Dead", isDead);
     }
 
+    /// <summary>
+    /// Initial movement of the ghost when they are in the GhostHouse
+    /// </summary>
     public void VerticalTilt()
     {
         Vector2 currentPos = transform.position;
@@ -115,12 +127,19 @@ public class GhostController: MonoBehaviour
 
     }
 
+
     public void ResetPosition()
     {
         _targetPosition = _startPos;
         transform.position = _startPos;
     }
 
+    /// <summary>
+    /// The speed change on some states, to improve gamefeel,
+    /// When dead, it speedup to reach the ghosthouse faster
+    /// When Frightened, it slow down to give a chance to be eaten by pacman
+    /// </summary>
+    /// <returns></returns>
     float GetSpeedBasedOnGhostState()
     {
         if (_ghostAI.CurrentState == GhostAI.GhostState.Dead)
